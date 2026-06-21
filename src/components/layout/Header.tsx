@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { MiniCart } from "@/components/cart/MiniCart";
 import { useCart } from "@/features/cart/cart-context";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
+import { useMounted } from "@/lib/use-mounted";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types";
 
@@ -14,7 +17,10 @@ interface HeaderProps {
 
 export function Header({ categories = [] }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { cart, setMiniCartOpen } = useCart();
+  const { cart, miniCartOpen, setMiniCartOpen } = useCart();
+  const mounted = useMounted();
+
+  useBodyScrollLock(mobileOpen);
 
   const categoryLinks = categories.map((category) => ({
     label: category.name,
@@ -27,8 +33,88 @@ export function Header({ categories = [] }: HeaderProps) {
     { label: "Sale", href: "/sale" },
   ];
 
+  function openMobileMenu() {
+    setMiniCartOpen(false);
+    setMobileOpen(true);
+  }
+
+  function openMiniCart() {
+    setMobileOpen(false);
+    setMiniCartOpen(true);
+  }
+
+  const mobileMenu =
+    mounted &&
+    createPortal(
+      <>
+        <div
+          className={cn(
+            "fixed inset-0 z-[60] bg-yora-charcoal/40 transition-opacity duration-300 lg:hidden",
+            mobileOpen
+              ? "opacity-100"
+              : "pointer-events-none opacity-0",
+          )}
+          onClick={() => setMobileOpen(false)}
+          aria-hidden={!mobileOpen}
+        />
+
+        <aside
+          className={cn(
+            "fixed top-0 left-0 z-[61] flex h-dvh w-[min(320px,85vw)] flex-col bg-yora-cream transition-transform duration-300 ease-out lg:hidden",
+            mobileOpen
+              ? "translate-x-0"
+              : "pointer-events-none -translate-x-full",
+          )}
+          aria-hidden={!mobileOpen}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+        >
+          <div className="flex items-center justify-between border-b border-yora-charcoal/10 px-5 py-4">
+            <span className="font-display text-xl tracking-[0.25em]">YORA</span>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="p-2"
+              aria-label="Fechar menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-5 py-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="border-b border-yora-charcoal/5 py-4 text-sm tracking-widest uppercase text-yora-charcoal transition-colors hover:text-yora-taupe"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="border-t border-yora-charcoal/10 px-5 py-6">
+            <Link
+              href="/conta"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 text-sm tracking-wide text-yora-charcoal"
+            >
+              <User className="h-4 w-4" />
+              Minha conta
+            </Link>
+          </div>
+        </aside>
+      </>,
+      document.body,
+    );
+
   return (
-    <header className="sticky top-0 z-50 bg-yora-cream/95 backdrop-blur-md">
+    <header
+      className="sticky top-0 z-50 bg-yora-cream/95 backdrop-blur-md"
+      style={{ viewTransitionName: "site-header" }}
+    >
       <div className="border-b border-yora-charcoal/10 bg-yora-charcoal text-yora-cream">
         <p className="px-4 py-2 text-center text-[11px] tracking-widest uppercase">
           Frete grátis acima de R$349 · 5% OFF no Pix · Parcelamento em 6x
@@ -39,8 +125,9 @@ export function Header({ categories = [] }: HeaderProps) {
         <button
           type="button"
           className="p-2 text-yora-charcoal lg:hidden"
-          onClick={() => setMobileOpen(true)}
+          onClick={openMobileMenu}
           aria-label="Abrir menu"
+          aria-expanded={mobileOpen}
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -52,7 +139,7 @@ export function Header({ categories = [] }: HeaderProps) {
           YORA
         </Link>
 
-        <nav className="hidden items-center gap-6 xl:gap-8 lg:flex">
+        <nav className="hidden items-center gap-6 lg:flex xl:gap-8">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -81,9 +168,10 @@ export function Header({ categories = [] }: HeaderProps) {
           </Link>
           <button
             type="button"
-            onClick={() => setMiniCartOpen(true)}
+            onClick={openMiniCart}
             className="relative p-2 text-yora-charcoal transition-colors hover:text-yora-taupe"
             aria-label="Abrir carrinho"
+            aria-expanded={miniCartOpen}
           >
             <ShoppingBag className="h-5 w-5" />
             {cart.itemCount > 0 && (
@@ -96,59 +184,7 @@ export function Header({ categories = [] }: HeaderProps) {
       </div>
 
       <MiniCart />
-
-      <div
-        className={cn(
-          "fixed inset-0 z-50 bg-yora-charcoal/40 transition-opacity lg:hidden",
-          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-        onClick={() => setMobileOpen(false)}
-        aria-hidden={!mobileOpen}
-      />
-
-      <aside
-        className={cn(
-          "fixed top-0 left-0 z-50 flex h-full w-[min(320px,85vw)] flex-col bg-yora-cream transition-transform duration-300 lg:hidden",
-          mobileOpen ? "translate-x-0" : "-translate-x-full",
-        )}
-        aria-hidden={!mobileOpen}
-      >
-        <div className="flex items-center justify-between border-b border-yora-charcoal/10 px-5 py-4">
-          <span className="font-display text-xl tracking-[0.25em]">YORA</span>
-          <button
-            type="button"
-            onClick={() => setMobileOpen(false)}
-            className="p-2"
-            aria-label="Fechar menu"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-5 py-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className="border-b border-yora-charcoal/5 py-4 text-sm tracking-widest uppercase text-yora-charcoal transition-colors hover:text-yora-taupe"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="border-t border-yora-charcoal/10 px-5 py-6">
-          <Link
-            href="/conta"
-            onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-3 text-sm tracking-wide text-yora-charcoal"
-          >
-            <User className="h-4 w-4" />
-            Minha conta
-          </Link>
-        </div>
-      </aside>
+      {mobileMenu}
     </header>
   );
 }

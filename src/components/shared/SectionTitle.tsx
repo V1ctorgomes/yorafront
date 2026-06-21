@@ -16,7 +16,7 @@ export function SectionTitle({
   return (
     <div
       className={cn(
-        "mb-10 md:mb-14",
+        "mb-6 md:mb-8",
         align === "center" && "text-center",
         className,
       )}

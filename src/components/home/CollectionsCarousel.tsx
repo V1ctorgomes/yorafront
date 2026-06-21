@@ -82,7 +82,7 @@ export function CollectionsCarousel({ collections }: CollectionsCarouselProps) {
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             className={cn(
-              "min-w-0 transition-[flex-grow,flex-shrink] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              "min-w-0 transition-[flex-grow,flex-shrink] duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
               hoveredIndex === null && "flex-1",
               hoveredIndex === index && "flex-[1.75]",
               hoveredIndex !== null &&

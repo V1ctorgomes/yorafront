@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { HeaderWrapper } from "@/components/layout/HeaderWrapper";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { StoreProviders } from "@/components/layout/StoreProviders";
 
 export default function StoreLayout({
@@ -11,7 +12,9 @@ export default function StoreLayout({
     <StoreProviders>
       <div className="flex min-h-full flex-col">
         <HeaderWrapper />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Footer />
       </div>
     </StoreProviders>

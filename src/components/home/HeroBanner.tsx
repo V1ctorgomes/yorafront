@@ -99,9 +99,8 @@ function HeroBannerContent({ banner, phase }: HeroBannerContentProps) {
         >
           <Button
             href={banner.buttonLink}
-            variant="outline"
+            variant="banner"
             size="lg"
-            className="border-yora-cream text-yora-cream transition-transform duration-300 hover:scale-[1.03] hover:bg-yora-cream hover:text-yora-charcoal"
           >
             {banner.buttonText}
           </Button>

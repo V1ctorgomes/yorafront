@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { CartLineItem } from "@/components/cart/CartLineItem";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/features/cart/cart-context";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
+import { useMounted } from "@/lib/use-mounted";
 import { cn, formatPrice } from "@/lib/utils";
 
 export function MiniCart() {
@@ -16,42 +18,34 @@ export function MiniCart() {
     updateItemQuantity,
     removeItem,
   } = useCart();
-  const panelRef = useRef<HTMLDivElement>(null);
+  const mounted = useMounted();
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(event.target as Node)
-      ) {
-        setMiniCartOpen(false);
-      }
-    }
+  useBodyScrollLock(miniCartOpen);
 
-    if (miniCartOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+  if (!mounted) return null;
 
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [miniCartOpen, setMiniCartOpen]);
-
-  return (
+  return createPortal(
     <>
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-yora-charcoal/30 transition-opacity",
-          miniCartOpen ? "opacity-100" : "pointer-events-none opacity-0",
+          "fixed inset-0 z-[60] bg-yora-charcoal/40 transition-opacity duration-300",
+          miniCartOpen
+            ? "opacity-100"
+            : "pointer-events-none opacity-0",
         )}
+        onClick={() => setMiniCartOpen(false)}
         aria-hidden={!miniCartOpen}
       />
 
       <aside
-        ref={panelRef}
         className={cn(
-          "fixed top-0 right-0 z-50 flex h-full w-[min(420px,100vw)] flex-col bg-yora-cream shadow-2xl transition-transform duration-300",
-          miniCartOpen ? "translate-x-0" : "translate-x-full",
+          "fixed top-0 right-0 z-[61] flex h-dvh w-[min(420px,100vw)] flex-col bg-yora-cream shadow-2xl transition-transform duration-300 ease-out",
+          miniCartOpen ? "translate-x-0" : "pointer-events-none translate-x-full",
         )}
         aria-hidden={!miniCartOpen}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Sacola"
       >
         <div className="flex items-center justify-between border-b border-yora-charcoal/10 px-5 py-4">
           <h2 className="font-display text-xl text-yora-charcoal">Sacola</h2>
@@ -67,9 +61,7 @@ export function MiniCart() {
 
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {cart.items.length === 0 ? (
-            <p className="text-sm text-yora-muted">
-              Sua sacola está vazia.
-            </p>
+            <p className="text-sm text-yora-muted">Sua sacola está vazia.</p>
           ) : (
             <div className="space-y-5">
               {cart.items.map((item) => (
@@ -117,6 +109,7 @@ export function MiniCart() {
           </Button>
         </div>
       </aside>
-    </>
+    </>,
+    document.body,
   );
 }

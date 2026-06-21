@@ -12,7 +12,7 @@ export async function FeaturedProductsSection() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24 lg:px-8">
-      <div className="mb-10 flex flex-col items-start justify-between gap-4 md:mb-14 md:flex-row md:items-end">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 md:mb-8 md:flex-row md:items-end">
         <SectionTitle
           title="Em destaque"
           subtitle="Os favoritos de quem entende de estilo."

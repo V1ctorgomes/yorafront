@@ -174,3 +174,67 @@ body {
   transform-origin: left center;
   animation: banner-dot-progress linear forwards;
 }
+
+:root {
+  --page-exit-duration: 200ms;
+  --page-enter-duration: 360ms;
+  --page-enter-delay: 90ms;
+}
+
+@keyframes page-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+::view-transition-old(.page-out),
+::view-transition-old(root) {
+  animation: var(--page-exit-duration) cubic-bezier(0.4, 0, 0.2, 1) both
+    page-fade-out;
+}
+
+::view-transition-new(.page-in),
+::view-transition-new(root) {
+  animation: var(--page-enter-duration) cubic-bezier(0.22, 1, 0.36, 1)
+    var(--page-enter-delay) both page-fade-in;
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+  }
+}
