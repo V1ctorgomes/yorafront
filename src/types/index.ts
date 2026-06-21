@@ -185,6 +185,27 @@ export interface ImageFormData {
   displayOrder: number;
 }
 
+export interface CartItem {
+  productId: string;
+  productVariantId: string;
+  productName: string;
+  productSlug: string;
+  imageUrl: string;
+  color: string;
+  size: string;
+  unitPrice: number;
+  quantity: number;
+  subtotal: number;
+  maxStock?: number;
+}
+
+export interface Cart {
+  items: CartItem[];
+  itemCount: number;
+  subtotal: number;
+  total: number;
+}
+
 export interface AuthResponse {
   accessToken: string;
   admin: {

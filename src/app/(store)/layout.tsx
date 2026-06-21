@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { HeaderWrapper } from "@/components/layout/HeaderWrapper";
+import { StoreProviders } from "@/components/layout/StoreProviders";
 
 export default function StoreLayout({
   children,
@@ -7,10 +8,12 @@ export default function StoreLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-full flex-col">
-      <HeaderWrapper />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
+    <StoreProviders>
+      <div className="flex min-h-full flex-col">
+        <HeaderWrapper />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </div>
+    </StoreProviders>
   );
 }

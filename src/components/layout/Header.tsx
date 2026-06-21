@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { MiniCart } from "@/components/cart/MiniCart";
+import { useCart } from "@/features/cart/cart-context";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types";
 
@@ -12,6 +14,7 @@ interface HeaderProps {
 
 export function Header({ categories = [] }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { cart, setMiniCartOpen } = useCart();
 
   const categoryLinks = categories.map((category) => ({
     label: category.name,
@@ -76,15 +79,23 @@ export function Header({ categories = [] }: HeaderProps) {
           >
             <User className="h-5 w-5" />
           </Link>
-          <Link
-            href="/carrinho"
-            className="p-2 text-yora-charcoal transition-colors hover:text-yora-taupe"
-            aria-label="Carrinho"
+          <button
+            type="button"
+            onClick={() => setMiniCartOpen(true)}
+            className="relative p-2 text-yora-charcoal transition-colors hover:text-yora-taupe"
+            aria-label="Abrir carrinho"
           >
             <ShoppingBag className="h-5 w-5" />
-          </Link>
+            {cart.itemCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-yora-charcoal px-1 text-[10px] font-medium text-yora-cream">
+                {cart.itemCount > 9 ? "9+" : cart.itemCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
+
+      <MiniCart />
 
       <div
         className={cn(

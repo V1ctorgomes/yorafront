@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useCart } from "@/features/cart/cart-context";
 import { cn, formatPrice } from "@/lib/utils";
 import type { Product, ProductVariant } from "@/types";
 
@@ -23,6 +24,9 @@ function getInitialSelection(variants: ProductVariant[]) {
 }
 
 export function ProductDetail({ product, variants }: ProductDetailProps) {
+  const { addItem } = useCart();
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState("");
   const gallery = useMemo(() => {
     if (product.images && product.images.length > 0) {
       return product.images;
@@ -60,6 +64,29 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
 
   const displayPrice = selectedVariant?.price ?? product.basePrice;
   const isSoldOut = !selectedVariant || selectedVariant.stock <= 0;
+  const canAddToCart =
+    Boolean(selectedVariant && selectedColor && selectedSize) && !isSoldOut;
+
+  async function handleAddToCart() {
+    if (!selectedVariant || !canAddToCart) {
+      return;
+    }
+
+    setAdding(true);
+    setAddError("");
+
+    try {
+      await addItem(selectedVariant.id, 1);
+    } catch (error) {
+      setAddError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível adicionar ao carrinho.",
+      );
+    } finally {
+      setAdding(false);
+    }
+  }
 
   function handleColorChange(color: string) {
     setSelectedColor(color);
@@ -228,13 +255,19 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
           )}
 
           <div className="mt-8">
-            <Button disabled={isSoldOut} className="min-w-[220px]">
-              {isSoldOut ? "Esgotado" : "Comprar"}
+            <Button
+              disabled={!canAddToCart || adding}
+              className="min-w-[220px]"
+              onClick={handleAddToCart}
+            >
+              {isSoldOut
+                ? "Esgotado"
+                : adding
+                  ? "Adicionando..."
+                  : "Adicionar ao Carrinho"}
             </Button>
-            {!isSoldOut && (
-              <p className="mt-3 text-xs text-yora-muted">
-                Carrinho disponível em breve.
-              </p>
+            {addError && (
+              <p className="mt-3 text-sm text-red-600">{addError}</p>
             )}
           </div>
 
