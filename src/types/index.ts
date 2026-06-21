@@ -3,10 +3,18 @@ export type ProductBadge = "new" | "sale" | "sold-out";
 export interface Banner {
   id: string;
   title: string;
-  subtitle: string;
-  image: string;
-  buttonText: string;
-  buttonLink: string;
+  subtitle: string | null;
+  imageUrl: string;
+  mobileImageUrl: string | null;
+  buttonText: string | null;
+  buttonLink: string | null;
+  displayOrder: number;
+}
+
+export interface AdminBanner extends Banner {
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Collection {
@@ -30,4 +38,23 @@ export interface Product {
 export interface NavItem {
   label: string;
   href: string;
+}
+
+export interface BannerFormData {
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  mobileImageUrl: string;
+  buttonText: string;
+  buttonLink: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  admin: {
+    id: string;
+    email: string;
+  };
 }

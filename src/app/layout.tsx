@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
+import { getSiteUrl } from "@/lib/env";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,9 +15,22 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Yora | Moda premium para treino e lifestyle",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: "Yora | Moda premium para treino e lifestyle",
+    template: "%s | Yora",
+  },
   description:
     "Drops exclusivos de activewear premium. Peças pensadas para yoga, treino e o dia a dia com estilo.",
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Yora",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -31,10 +43,8 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${inter.variable} ${cormorant.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-yora-cream font-sans text-yora-charcoal">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <body className="min-h-full bg-yora-cream font-sans text-yora-charcoal">
+        {children}
       </body>
     </html>
   );
