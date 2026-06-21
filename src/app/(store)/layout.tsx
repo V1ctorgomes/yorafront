@@ -1,18 +1,21 @@
 import { Footer } from "@/components/layout/Footer";
-import { HeaderWrapper } from "@/components/layout/HeaderWrapper";
+import { Header } from "@/components/layout/Header";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { StoreProviders } from "@/components/layout/StoreProviders";
+import { fetchActiveCategories } from "@/lib/api/categories";
 
-export default function StoreLayout({
+export default async function StoreLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const categories = await fetchActiveCategories();
+
   return (
-    <StoreProviders>
-      <div className="flex min-h-full flex-col">
-        <HeaderWrapper />
-        <main className="flex-1">
+    <StoreProviders categories={categories}>
+      <div className="flex min-h-full flex-col overflow-x-hidden">
+        <Header categories={categories} />
+        <main className="flex-1 overflow-x-hidden">
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer />

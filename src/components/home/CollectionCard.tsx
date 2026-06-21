@@ -32,7 +32,7 @@ export function CollectionCard({
       className={cn(
         "group relative block overflow-hidden bg-yora-sand",
         isCarousel
-          ? `aspect-[3/4] h-[min(520px,62vh)] transition-[flex-grow,flex-shrink,filter,box-shadow] duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] md:aspect-auto md:h-[min(560px,68vh)]`
+          ? `aspect-[3/4] h-[min(520px,62vh)] transition-[flex-grow,flex-shrink,filter,box-shadow] duration-[1300ms] ease-[cubic-bezier(0.22,1,0.36,1)] md:aspect-auto md:h-[min(560px,68vh)]`
           : "aspect-[16/10] md:aspect-[21/9]",
         isDimmed && "brightness-[0.92]",
         isExpanded && "brightness-100 shadow-xl ring-1 ring-yora-charcoal/10",
@@ -46,7 +46,7 @@ export function CollectionCard({
         className={cn(
           "object-cover ease-out",
           isCarousel
-            ? "transition-transform duration-[1200ms]"
+            ? "transition-transform duration-[1560ms]"
             : "transition-transform duration-700",
           isExpanded ? "scale-110" : "group-hover:scale-105",
         )}
@@ -59,7 +59,7 @@ export function CollectionCard({
       <div
         className={cn(
           "absolute inset-0 bg-gradient-to-t from-yora-charcoal/80 via-yora-charcoal/25 to-transparent transition-opacity ease-[cubic-bezier(0.22,1,0.36,1)]",
-          isCarousel ? "duration-[1000ms]" : "duration-500",
+          isCarousel ? "duration-[1300ms]" : "duration-500",
           isExpanded && "from-yora-charcoal/85 via-yora-charcoal/35",
         )}
       />
@@ -67,7 +67,7 @@ export function CollectionCard({
         className={cn(
           "absolute inset-x-0 bottom-0 p-5 md:p-7",
           isCarousel
-            ? "transition-all duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+            ? "transition-all duration-[1300ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
             : "transition-all duration-500",
           isExpanded && "pb-7 md:pb-9",
         )}
@@ -76,7 +76,7 @@ export function CollectionCard({
           className={cn(
             "text-xs tracking-[0.35em] text-yora-cream/80 uppercase",
             isCarousel
-              ? "transition-all duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              ? "transition-all duration-[1300ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
               : "transition-all duration-500",
             isExpanded && "tracking-[0.45em]",
           )}
@@ -87,7 +87,7 @@ export function CollectionCard({
           className={cn(
             "mt-2 font-display text-yora-cream",
             isCarousel
-              ? "transition-all duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              ? "transition-all duration-[1300ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
               : "transition-all duration-500",
             isCarousel
               ? "text-2xl md:text-3xl"
@@ -100,7 +100,7 @@ export function CollectionCard({
         {collection.description && isCarousel && (
           <p
             className={cn(
-              "mt-2 line-clamp-2 text-sm leading-relaxed text-yora-cream/85 transition-all duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+              "mt-2 line-clamp-2 text-sm leading-relaxed text-yora-cream/85 transition-all duration-[1300ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
               isExpanded
                 ? "max-h-24 opacity-100"
                 : "max-h-0 overflow-hidden opacity-0",
@@ -113,7 +113,7 @@ export function CollectionCard({
           className={cn(
             "mt-3 inline-block text-xs tracking-widest text-yora-cream/90 uppercase",
             isCarousel
-              ? "transition-all duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              ? "transition-all duration-[1300ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
               : "transition-all duration-500",
             isExpanded || !isCarousel
               ? "translate-y-0 opacity-100"

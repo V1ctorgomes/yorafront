@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useNavigation } from "@/features/navigation/navigation-context";
+import type { NavTransitionDirection } from "@/features/navigation/navigation-context";
 import { cn } from "@/lib/utils";
 
 interface PageTransitionProps {
@@ -10,12 +12,31 @@ interface PageTransitionProps {
 
 type Phase = "idle" | "exit" | "enter";
 
-const EXIT_DURATION = 320;
-const ENTER_DURATION = 560;
+const EXIT_DURATION = 340;
+const ENTER_DURATION = 520;
+
+function getPhaseClasses(phase: Phase, direction: NavTransitionDirection) {
+  if (phase === "exit") {
+    if (direction === "forward") return "animate-page-route-out-forward";
+    if (direction === "backward") return "animate-page-route-out-backward";
+    return "animate-page-route-out";
+  }
+
+  if (phase === "enter") {
+    if (direction === "forward") return "animate-page-route-in-forward";
+    if (direction === "backward") return "animate-page-route-in-backward";
+    return "animate-page-route-in";
+  }
+
+  return undefined;
+}
 
 export function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname();
+  const { getTransitionDirection } = useNavigation();
   const [phase, setPhase] = useState<Phase>("enter");
+  const [direction, setDirection] =
+    useState<NavTransitionDirection>("neutral");
   const [visibleChildren, setVisibleChildren] = useState(children);
   const isFirstRender = useRef(true);
   const pathnameRef = useRef(pathname);
@@ -34,6 +55,12 @@ export function PageTransition({ children }: PageTransitionProps) {
       return;
     }
 
+    const nextDirection = getTransitionDirection(
+      pathnameRef.current,
+      pathname,
+    );
+
+    setDirection(nextDirection);
     setPhase("exit");
 
     let enterTimer: ReturnType<typeof setTimeout>;
@@ -56,14 +83,13 @@ export function PageTransition({ children }: PageTransitionProps) {
       clearTimeout(exitTimer);
       clearTimeout(enterTimer);
     };
-  }, [pathname, children]);
+  }, [pathname, children, getTransitionDirection]);
 
   return (
     <div
       className={cn(
-        "min-h-full transform-gpu",
-        phase === "exit" && "animate-page-route-out",
-        phase === "enter" && "animate-page-route-in",
+        "min-h-full transform-gpu overflow-x-hidden",
+        getPhaseClasses(phase, direction),
       )}
     >
       {visibleChildren}
