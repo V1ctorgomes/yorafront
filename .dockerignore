@@ -1,0 +1,28 @@
+# dependencies
+node_modules
+npm-debug.log*
+
+# build
+.next
+out
+dist
+
+# env
+.env
+.env.*
+!.env.example
+
+# git / ide
+.git
+.gitignore
+.vscode
+.idea
+
+# docs / tests
+README.md
+*.md
+coverage
+
+# misc
+.DS_Store
+Thumbs.db

@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --yora-cream: #faf8f5;
+  --yora-charcoal: #1a1a1a;
+  --yora-taupe: #8b7355;
+  --yora-rose: #c4a484;
+  --yora-sand: #f0ebe3;
+  --yora-muted: #6b6560;
+}
+
+@theme inline {
+  --color-yora-cream: var(--yora-cream);
+  --color-yora-charcoal: var(--yora-charcoal);
+  --color-yora-taupe: var(--yora-taupe);
+  --color-yora-rose: var(--yora-rose);
+  --color-yora-sand: var(--yora-sand);
+  --color-yora-muted: var(--yora-muted);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-cormorant);
+}
+
+body {
+  background: var(--yora-cream);
+  color: var(--yora-charcoal);
+}
+
+.font-display {
+  font-family: var(--font-cormorant), Georgia, serif;
+}
