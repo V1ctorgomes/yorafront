@@ -28,3 +28,51 @@ body {
 .font-display {
   font-family: var(--font-cormorant), Georgia, serif;
 }
+
+@keyframes banner-char-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes banner-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes banner-image-zoom {
+  from {
+    transform: scale(1.08);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+.animate-banner-char {
+  opacity: 0;
+  animation: banner-char-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-banner-fade-up {
+  opacity: 0;
+  animation: banner-fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-banner-image-zoom {
+  animation: banner-image-zoom 8s ease-out forwards;
+}
