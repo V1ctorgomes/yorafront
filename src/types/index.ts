@@ -6,6 +6,27 @@ export interface ProductCategoryRef {
   slug: string;
 }
 
+export interface ProductImage {
+  id: string;
+  imageUrl: string;
+  altText: string | null;
+  displayOrder: number;
+}
+
+export interface ProductVariant {
+  id: string;
+  productId?: string;
+  sku: string;
+  color: string;
+  size: string;
+  priceOverride: number | null;
+  price: number;
+  stock: number;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -19,6 +40,7 @@ export interface Product {
   description?: string;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  images?: ProductImage[];
 }
 
 export interface AdminProduct extends Product {
@@ -100,6 +122,21 @@ export interface ProductFormData {
   isActive: boolean;
   seoTitle: string;
   seoDescription: string;
+}
+
+export interface VariantFormData {
+  color: string;
+  size: string;
+  sku: string;
+  priceOverride: string;
+  stock: number;
+  isActive: boolean;
+}
+
+export interface ImageFormData {
+  imageUrl: string;
+  altText: string;
+  displayOrder: number;
 }
 
 export interface AuthResponse {

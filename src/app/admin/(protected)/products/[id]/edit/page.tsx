@@ -3,16 +3,28 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { ProductGalleryManager } from "@/components/admin/ProductGalleryManager";
+import { ProductVariantsManager } from "@/components/admin/ProductVariantsManager";
 import {
   fetchAdminCategories,
   fetchAdminProduct,
   updateProduct,
 } from "@/lib/api/admin";
+import { cn } from "@/lib/utils";
 import type { AdminCategory, ProductFormData } from "@/types";
+
+type ProductTab = "general" | "variants" | "gallery";
+
+const tabs: { id: ProductTab; label: string }[] = [
+  { id: "general", label: "Geral" },
+  { id: "variants", label: "Variantes" },
+  { id: "gallery", label: "Galeria" },
+];
 
 export default function EditProductPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<ProductTab>("general");
   const [form, setForm] = useState<ProductFormData | null>(null);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [loading, setLoading] = useState(false);
@@ -89,19 +101,47 @@ export default function EditProductPage() {
         Editar produto
       </h1>
       <p className="mt-1 text-sm text-yora-muted">
-        Atualize as informações do produto selecionado.
+        Gerencie informações, variantes e galeria do produto.
       </p>
 
-      <ProductForm
-        form={form}
-        categories={categories}
-        onChange={setForm}
-        onSubmit={handleSubmit}
-        submitLabel={loading ? "Salvando..." : "Salvar alterações"}
-        error={error}
-        disabled={loading}
-        slugEditable
-      />
+      <div className="mt-8 flex flex-wrap gap-2 border-b border-yora-charcoal/10">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "px-4 py-2 text-sm tracking-wide transition-colors",
+              activeTab === tab.id
+                ? "border-b-2 border-yora-charcoal text-yora-charcoal"
+                : "text-yora-muted hover:text-yora-charcoal",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "general" && (
+        <ProductForm
+          form={form}
+          categories={categories}
+          onChange={setForm}
+          onSubmit={handleSubmit}
+          submitLabel={loading ? "Salvando..." : "Salvar alterações"}
+          error={error}
+          disabled={loading}
+          slugEditable
+        />
+      )}
+
+      {activeTab === "variants" && (
+        <ProductVariantsManager productId={params.id} />
+      )}
+
+      {activeTab === "gallery" && (
+        <ProductGalleryManager productId={params.id} />
+      )}
     </div>
   );
 }

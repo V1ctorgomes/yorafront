@@ -1,5 +1,5 @@
 import { getApiUrl } from "@/lib/env";
-import type { Product } from "@/types";
+import type { Product, ProductVariant } from "@/types";
 
 interface FetchProductsParams {
   featured?: boolean;
@@ -59,5 +59,23 @@ export async function fetchProductBySlug(
     return response.json();
   } catch {
     return null;
+  }
+}
+
+export async function fetchProductVariants(
+  slug: string,
+): Promise<ProductVariant[]> {
+  try {
+    const response = await fetch(`${getApiUrl()}/products/${slug}/variants`, {
+      next: { revalidate: 60 },
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return response.json();
+  } catch {
+    return [];
   }
 }

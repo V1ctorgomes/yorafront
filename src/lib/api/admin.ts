@@ -8,6 +8,10 @@ import type {
   BannerFormData,
   CategoryFormData,
   ProductFormData,
+  ProductImage,
+  ProductVariant,
+  VariantFormData,
+  ImageFormData,
 } from "@/types";
 
 class ApiError extends Error {
@@ -182,6 +186,84 @@ export function updateProduct(id: string, data: Partial<ProductFormData>) {
 
 export function deleteProduct(id: string) {
   return adminFetch<{ message: string }>(`/admin/products/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function fetchAdminProductVariants(productId: string) {
+  return adminFetch<ProductVariant[]>(`/admin/products/${productId}/variants`);
+}
+
+export function createProductVariant(
+  productId: string,
+  data: {
+    color: string;
+    size: string;
+    sku: string;
+    priceOverride?: number;
+    stock: number;
+    isActive?: boolean;
+  },
+) {
+  return adminFetch<ProductVariant>(`/admin/products/${productId}/variants`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateProductVariant(
+  id: string,
+  data: {
+    color?: string;
+    size?: string;
+    sku?: string;
+    priceOverride?: number | null;
+    stock?: number;
+    isActive?: boolean;
+  },
+) {
+  return adminFetch<ProductVariant>(`/admin/variants/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteProductVariant(id: string) {
+  return adminFetch<{ message: string }>(`/admin/variants/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function fetchAdminProductImages(productId: string) {
+  return adminFetch<ProductImage[]>(`/admin/products/${productId}/images`);
+}
+
+export function createProductImage(
+  productId: string,
+  data: {
+    imageUrl: string;
+    altText?: string;
+    displayOrder?: number;
+  },
+) {
+  return adminFetch<ProductImage>(`/admin/products/${productId}/images`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateProductImage(
+  id: string,
+  data: Partial<ImageFormData>,
+) {
+  return adminFetch<ProductImage>(`/admin/images/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteProductImage(id: string) {
+  return adminFetch<{ message: string }>(`/admin/images/${id}`, {
     method: "DELETE",
   });
 }
