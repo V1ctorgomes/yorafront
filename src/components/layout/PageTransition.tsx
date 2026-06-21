@@ -10,6 +10,9 @@ interface PageTransitionProps {
 
 type Phase = "idle" | "exit" | "enter";
 
+const EXIT_DURATION = 320;
+const ENTER_DURATION = 560;
+
 export function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname();
   const [phase, setPhase] = useState<Phase>("enter");
@@ -22,7 +25,7 @@ export function PageTransition({ children }: PageTransitionProps) {
       isFirstRender.current = false;
       pathnameRef.current = pathname;
       setVisibleChildren(children);
-      const timer = setTimeout(() => setPhase("idle"), 420);
+      const timer = setTimeout(() => setPhase("idle"), ENTER_DURATION);
       return () => clearTimeout(timer);
     }
 
@@ -40,10 +43,14 @@ export function PageTransition({ children }: PageTransitionProps) {
       setVisibleChildren(children);
       setPhase("enter");
 
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+
       enterTimer = setTimeout(() => {
         setPhase("idle");
-      }, 420);
-    }, 240);
+      }, ENTER_DURATION);
+    }, EXIT_DURATION);
 
     return () => {
       clearTimeout(exitTimer);
@@ -54,7 +61,7 @@ export function PageTransition({ children }: PageTransitionProps) {
   return (
     <div
       className={cn(
-        "min-h-full",
+        "min-h-full transform-gpu",
         phase === "exit" && "animate-page-route-out",
         phase === "enter" && "animate-page-route-in",
       )}
