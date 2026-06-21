@@ -6,8 +6,9 @@ import { ProductForm } from "@/components/admin/ProductForm";
 import {
   createProduct,
   fetchAdminCategories,
+  fetchAdminCollections,
 } from "@/lib/api/admin";
-import type { AdminCategory, ProductFormData } from "@/types";
+import type { AdminCategory, AdminCollection, ProductFormData } from "@/types";
 
 const initialData: ProductFormData = {
   name: "",
@@ -15,6 +16,7 @@ const initialData: ProductFormData = {
   shortDescription: "",
   description: "",
   categoryId: "",
+  collectionId: "",
   basePrice: 0,
   coverImage: "",
   isFeatured: false,
@@ -28,13 +30,17 @@ export default function NewProductPage() {
   const router = useRouter();
   const [form, setForm] = useState<ProductFormData>(initialData);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [collections, setCollections] = useState<AdminCollection[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchAdminCategories()
-      .then(setCategories)
-      .catch(() => setError("Não foi possível carregar as categorias."));
+    Promise.all([fetchAdminCategories(), fetchAdminCollections()])
+      .then(([categoryList, collectionList]) => {
+        setCategories(categoryList);
+        setCollections(collectionList);
+      })
+      .catch(() => setError("Não foi possível carregar os dados do formulário."));
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -49,6 +55,7 @@ export default function NewProductPage() {
         shortDescription: form.shortDescription,
         description: form.description,
         categoryId: form.categoryId,
+        collectionId: form.collectionId || null,
         basePrice: form.basePrice,
         coverImage: form.coverImage,
         isFeatured: form.isFeatured,
@@ -79,6 +86,7 @@ export default function NewProductPage() {
       <ProductForm
         form={form}
         categories={categories}
+        collections={collections}
         onChange={setForm}
         onSubmit={handleSubmit}
         submitLabel={loading ? "Salvando..." : "Criar produto"}

@@ -4,13 +4,11 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { slugify } from "@/lib/slug";
 import { Button } from "@/components/ui/Button";
-import type { AdminCategory, AdminCollection, ProductFormData } from "@/types";
+import type { CollectionFormData } from "@/types";
 
-interface ProductFormProps {
-  form: ProductFormData;
-  categories: AdminCategory[];
-  collections: AdminCollection[];
-  onChange: (form: ProductFormData) => void;
+interface CollectionFormProps {
+  form: CollectionFormData;
+  onChange: (form: CollectionFormData) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   submitLabel: string;
   error?: string;
@@ -18,17 +16,15 @@ interface ProductFormProps {
   slugEditable?: boolean;
 }
 
-export function ProductForm({
+export function CollectionForm({
   form,
-  categories,
-  collections,
   onChange,
   onSubmit,
   submitLabel,
   error,
   disabled,
   slugEditable = false,
-}: ProductFormProps) {
+}: CollectionFormProps) {
   const [manualSlug, setManualSlug] = useState(slugEditable);
 
   useEffect(() => {
@@ -37,9 +33,9 @@ export function ProductForm({
     }
   }, [slugEditable]);
 
-  function updateField<K extends keyof ProductFormData>(
+  function updateField<K extends keyof CollectionFormData>(
     key: K,
-    value: ProductFormData[K],
+    value: CollectionFormData[K],
   ) {
     onChange({ ...form, [key]: value });
   }
@@ -92,105 +88,71 @@ export function ProductForm({
 
       <div>
         <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-          Descrição curta *
-        </label>
-        <textarea
-          value={form.shortDescription}
-          onChange={(e) => updateField("shortDescription", e.target.value)}
-          required
-          rows={2}
-          minLength={10}
-          className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-          Descrição completa *
+          Descrição
         </label>
         <textarea
           value={form.description}
           onChange={(e) => updateField("description", e.target.value)}
-          required
-          rows={6}
-          minLength={20}
+          rows={4}
           className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
         />
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Categoria *
-          </label>
-          <select
-            value={form.categoryId}
-            onChange={(e) => updateField("categoryId", e.target.value)}
-            required
-            className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
-          >
-            <option value="">Selecione</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Coleção
-          </label>
-          <select
-            value={form.collectionId}
-            onChange={(e) => updateField("collectionId", e.target.value)}
-            className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
-          >
-            <option value="">Nenhuma</option>
-            {collections.map((collection) => (
-              <option key={collection.id} value={collection.id}>
-                {collection.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="grid gap-5 md:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Preço base (R$) *
-          </label>
-          <input
-            type="number"
-            min={0.01}
-            step={0.01}
-            value={form.basePrice || ""}
-            onChange={(e) =>
-              updateField("basePrice", Number(e.target.value))
-            }
-            required
-            className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
-          />
-        </div>
-      </div>
-
       <div>
         <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-          URL da imagem principal *
+          URL do banner *
         </label>
         <input
           type="url"
-          value={form.coverImage}
-          onChange={(e) => updateField("coverImage", e.target.value)}
+          value={form.bannerImageUrl}
+          onChange={(e) => updateField("bannerImageUrl", e.target.value)}
           required
           placeholder="https://"
           className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div>
+        <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
+          URL da thumbnail *
+        </label>
+        <input
+          type="url"
+          value={form.thumbnailImageUrl}
+          onChange={(e) => updateField("thumbnailImageUrl", e.target.value)}
+          required
+          placeholder="https://"
+          className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
+        />
+      </div>
+
+      <div className="grid gap-5 md:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
+            Data de lançamento *
+          </label>
+          <input
+            type="datetime-local"
+            value={form.launchDate}
+            onChange={(e) => updateField("launchDate", e.target.value)}
+            required
+            className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
+            Data de encerramento
+          </label>
+          <input
+            type="datetime-local"
+            value={form.endDate}
+            onChange={(e) => updateField("endDate", e.target.value)}
+            className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
         <label className="flex items-center gap-3 text-sm">
           <input
             type="checkbox"
@@ -198,16 +160,7 @@ export function ProductForm({
             onChange={(e) => updateField("isFeatured", e.target.checked)}
             className="h-4 w-4"
           />
-          Em destaque
-        </label>
-        <label className="flex items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            checked={form.isNew}
-            onChange={(e) => updateField("isNew", e.target.checked)}
-            className="h-4 w-4"
-          />
-          Novidade
+          Coleção em destaque
         </label>
         <label className="flex items-center gap-3 text-sm">
           <input
@@ -216,31 +169,8 @@ export function ProductForm({
             onChange={(e) => updateField("isActive", e.target.checked)}
             className="h-4 w-4"
           />
-          Produto ativo
+          Coleção ativa
         </label>
-      </div>
-
-      <div>
-        <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-          SEO Title
-        </label>
-        <input
-          value={form.seoTitle}
-          onChange={(e) => updateField("seoTitle", e.target.value)}
-          className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-          SEO Description
-        </label>
-        <textarea
-          value={form.seoDescription}
-          onChange={(e) => updateField("seoDescription", e.target.value)}
-          rows={3}
-          className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
-        />
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -250,7 +180,7 @@ export function ProductForm({
           {submitLabel}
         </Button>
         <Link
-          href="/admin/products"
+          href="/admin/collections"
           className="text-sm text-yora-muted hover:text-yora-charcoal"
         >
           Cancelar
@@ -259,3 +189,68 @@ export function ProductForm({
     </form>
   );
 }
+
+function toDateTimeLocalValue(iso: string) {
+  const date = new Date(iso);
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export function collectionToFormData(collection: {
+  name: string;
+  slug: string;
+  description: string | null;
+  bannerImageUrl: string;
+  thumbnailImageUrl: string;
+  launchDate: string;
+  endDate: string | null;
+  isFeatured: boolean;
+  isActive: boolean;
+}): CollectionFormData {
+  return {
+    name: collection.name,
+    slug: collection.slug,
+    description: collection.description ?? "",
+    bannerImageUrl: collection.bannerImageUrl,
+    thumbnailImageUrl: collection.thumbnailImageUrl,
+    launchDate: toDateTimeLocalValue(collection.launchDate),
+    endDate: collection.endDate ? toDateTimeLocalValue(collection.endDate) : "",
+    isFeatured: collection.isFeatured,
+    isActive: collection.isActive,
+  };
+}
+
+export function formDataToCollectionPayload(form: CollectionFormData) {
+  return {
+    name: form.name,
+    slug: form.slug || undefined,
+    description: form.description || undefined,
+    bannerImageUrl: form.bannerImageUrl,
+    thumbnailImageUrl: form.thumbnailImageUrl,
+    launchDate: new Date(form.launchDate).toISOString(),
+    endDate: form.endDate ? new Date(form.endDate).toISOString() : undefined,
+    isFeatured: form.isFeatured,
+    isActive: form.isActive,
+  };
+}
+
+function defaultLaunchDate() {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T12:00`;
+}
+
+export const initialCollectionFormData: CollectionFormData = {
+  name: "",
+  slug: "",
+  description: "",
+  bannerImageUrl: "",
+  thumbnailImageUrl: "",
+  launchDate: defaultLaunchDate(),
+  endDate: "",
+  isFeatured: false,
+  isActive: true,
+};

@@ -3,10 +3,12 @@ import { getApiUrl } from "@/lib/env";
 import type {
   AdminBanner,
   AdminCategory,
+  AdminCollection,
   AdminProduct,
   AuthResponse,
   BannerFormData,
   CategoryFormData,
+  CollectionFormData,
   ProductFormData,
   ProductImage,
   ProductVariant,
@@ -163,6 +165,7 @@ export function createProduct(data: {
   shortDescription: string;
   description: string;
   categoryId: string;
+  collectionId?: string | null;
   basePrice: number;
   coverImage: string;
   isFeatured?: boolean;
@@ -177,7 +180,12 @@ export function createProduct(data: {
   });
 }
 
-export function updateProduct(id: string, data: Partial<ProductFormData>) {
+export function updateProduct(
+  id: string,
+  data: Partial<Omit<ProductFormData, "collectionId">> & {
+    collectionId?: string | null;
+  },
+) {
   return adminFetch<AdminProduct>(`/admin/products/${id}`, {
     method: "PATCH",
     body: JSON.stringify(data),
@@ -186,6 +194,52 @@ export function updateProduct(id: string, data: Partial<ProductFormData>) {
 
 export function deleteProduct(id: string) {
   return adminFetch<{ message: string }>(`/admin/products/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function fetchAdminCollections() {
+  return adminFetch<AdminCollection[]>("/admin/collections");
+}
+
+export function fetchAdminCollection(id: string) {
+  return adminFetch<AdminCollection>(`/admin/collections/${id}`);
+}
+
+export function createCollection(data: {
+  name: string;
+  slug?: string;
+  description?: string;
+  bannerImageUrl: string;
+  thumbnailImageUrl: string;
+  launchDate: string;
+  endDate?: string;
+  isFeatured?: boolean;
+  isActive?: boolean;
+}) {
+  return adminFetch<AdminCollection>("/admin/collections", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateCollection(
+  id: string,
+  data: Partial<CollectionFormData> & {
+    launchDate?: string;
+    endDate?: string | null;
+    bannerImageUrl?: string;
+    thumbnailImageUrl?: string;
+  },
+) {
+  return adminFetch<AdminCollection>(`/admin/collections/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteCollection(id: string) {
+  return adminFetch<{ message: string }>(`/admin/collections/${id}`, {
     method: "DELETE",
   });
 }

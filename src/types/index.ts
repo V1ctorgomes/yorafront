@@ -6,6 +6,12 @@ export interface ProductCategoryRef {
   slug: string;
 }
 
+export interface ProductCollectionRef {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface ProductImage {
   id: string;
   imageUrl: string;
@@ -47,6 +53,33 @@ export interface AdminProduct extends Product {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  collection?: ProductCollectionRef | null;
+}
+
+export interface Collection {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  bannerImageUrl: string;
+  thumbnailImageUrl: string;
+  launchDate: string;
+  endDate: string | null;
+  isFeatured: boolean;
+}
+
+export interface CollectionDetail extends Collection {
+  productCount: number;
+  products: Product[];
+}
+
+export interface AdminCollection extends Collection {
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    products: number;
+  };
 }
 
 export interface Banner {
@@ -115,6 +148,7 @@ export interface ProductFormData {
   shortDescription: string;
   description: string;
   categoryId: string;
+  collectionId: string;
   basePrice: number;
   coverImage: string;
   isFeatured: boolean;
@@ -122,6 +156,18 @@ export interface ProductFormData {
   isActive: boolean;
   seoTitle: string;
   seoDescription: string;
+}
+
+export interface CollectionFormData {
+  name: string;
+  slug: string;
+  description: string;
+  bannerImageUrl: string;
+  thumbnailImageUrl: string;
+  launchDate: string;
+  endDate: string;
+  isFeatured: boolean;
+  isActive: boolean;
 }
 
 export interface VariantFormData {

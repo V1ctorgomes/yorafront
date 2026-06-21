@@ -7,11 +7,12 @@ import { ProductGalleryManager } from "@/components/admin/ProductGalleryManager"
 import { ProductVariantsManager } from "@/components/admin/ProductVariantsManager";
 import {
   fetchAdminCategories,
+  fetchAdminCollections,
   fetchAdminProduct,
   updateProduct,
 } from "@/lib/api/admin";
 import { cn } from "@/lib/utils";
-import type { AdminCategory, ProductFormData } from "@/types";
+import type { AdminCategory, AdminCollection, ProductFormData } from "@/types";
 
 type ProductTab = "general" | "variants" | "gallery";
 
@@ -27,6 +28,7 @@ export default function EditProductPage() {
   const [activeTab, setActiveTab] = useState<ProductTab>("general");
   const [form, setForm] = useState<ProductFormData | null>(null);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [collections, setCollections] = useState<AdminCollection[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,15 +36,18 @@ export default function EditProductPage() {
     Promise.all([
       fetchAdminProduct(params.id),
       fetchAdminCategories(),
+      fetchAdminCollections(),
     ])
-      .then(([product, categoryList]) => {
+      .then(([product, categoryList, collectionList]) => {
         setCategories(categoryList);
+        setCollections(collectionList);
         setForm({
           name: product.name,
           slug: product.slug,
           shortDescription: product.shortDescription,
           description: product.description ?? "",
           categoryId: product.category.id,
+          collectionId: product.collection?.id ?? "",
           basePrice: product.basePrice,
           coverImage: product.coverImage,
           isFeatured: product.isFeatured,
@@ -69,6 +74,7 @@ export default function EditProductPage() {
         shortDescription: form.shortDescription,
         description: form.description,
         categoryId: form.categoryId,
+        collectionId: form.collectionId || null,
         basePrice: form.basePrice,
         coverImage: form.coverImage,
         isFeatured: form.isFeatured,
@@ -126,6 +132,7 @@ export default function EditProductPage() {
         <ProductForm
           form={form}
           categories={categories}
+          collections={collections}
           onChange={setForm}
           onSubmit={handleSubmit}
           submitLabel={loading ? "Salvando..." : "Salvar alterações"}
