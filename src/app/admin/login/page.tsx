@@ -51,6 +51,8 @@ export default function AdminLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
+              placeholder="admin@yora.com.br"
               className="w-full border border-yora-charcoal/20 bg-transparent px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
             />
           </div>
