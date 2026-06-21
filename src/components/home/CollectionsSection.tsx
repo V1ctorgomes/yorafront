@@ -1,4 +1,5 @@
 import { CollectionCard } from "@/components/home/CollectionCard";
+import { CollectionsCarousel } from "@/components/home/CollectionsCarousel";
 import { SectionTitle } from "@/components/shared/SectionTitle";
 import { fetchActiveCollections } from "@/lib/api/collections";
 
@@ -15,10 +16,15 @@ export async function CollectionsSection() {
         title="Coleções"
         subtitle="Drops e lançamentos exclusivos da Yora."
       />
-      <div className="grid gap-4 md:gap-6">
+
+      <div className="grid gap-4 md:hidden">
         {collections.map((collection) => (
           <CollectionCard key={collection.id} collection={collection} />
         ))}
+      </div>
+
+      <div className="hidden md:block">
+        <CollectionsCarousel collections={collections} />
       </div>
     </section>
   );

@@ -55,11 +55,83 @@ body {
 
 @keyframes banner-image-zoom {
   from {
-    transform: scale(1.08);
+    transform: scale(1.06);
   }
 
   to {
     transform: scale(1);
+  }
+}
+
+@keyframes banner-content-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-1.25rem);
+    filter: blur(4px);
+  }
+}
+
+@keyframes banner-slide-in-next {
+  from {
+    opacity: 0;
+    transform: scale(1.08) translateX(3%);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+@keyframes banner-slide-in-prev {
+  from {
+    opacity: 0;
+    transform: scale(1.08) translateX(-3%);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+@keyframes banner-slide-out-next {
+  from {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.04) translateX(-3%);
+  }
+}
+
+@keyframes banner-slide-out-prev {
+  from {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.04) translateX(3%);
+  }
+}
+
+@keyframes banner-dot-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
   }
 }
 
@@ -74,5 +146,31 @@ body {
 }
 
 .animate-banner-image-zoom {
-  animation: banner-image-zoom 8s ease-out forwards;
+  animation: banner-image-zoom 9s ease-out forwards;
+}
+
+.animate-banner-content-out {
+  animation: banner-content-out 0.55s cubic-bezier(0.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+
+.animate-banner-slide-in-next {
+  animation: banner-slide-in-next 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-banner-slide-in-prev {
+  animation: banner-slide-in-prev 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-banner-slide-out-next {
+  animation: banner-slide-out-next 1.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.animate-banner-slide-out-prev {
+  animation: banner-slide-out-prev 1.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.animate-banner-dot-progress {
+  transform-origin: left center;
+  animation: banner-dot-progress linear forwards;
 }
