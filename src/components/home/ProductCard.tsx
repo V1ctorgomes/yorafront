@@ -10,30 +10,28 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const isSoldOut = product.badge === "sold-out";
-
   return (
     <article className="group flex flex-col">
       <Link
-        href={`/produtos/${product.slug}`}
+        href={`/produto/${product.slug}`}
         className="relative aspect-[3/4] overflow-hidden bg-yora-sand"
       >
         <Image
-          src={product.image}
+          src={product.coverImage}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
-        {product.badge && (
+        {product.isNew && (
           <div className="absolute top-3 left-3">
-            <Badge type={product.badge} />
+            <Badge type="new" />
           </div>
         )}
       </Link>
 
       <div className="mt-4 flex flex-1 flex-col">
-        <Link href={`/produtos/${product.slug}`}>
+        <Link href={`/produto/${product.slug}`}>
           <h3 className="text-sm tracking-wide text-yora-charcoal transition-colors group-hover:text-yora-taupe">
             {product.name}
           </h3>
@@ -41,23 +39,13 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-sm font-medium text-yora-charcoal">
-            {formatPrice(product.price)}
+            {formatPrice(product.basePrice)}
           </span>
-          {product.compareAtPrice && (
-            <span className="text-xs text-yora-muted line-through">
-              {formatPrice(product.compareAtPrice)}
-            </span>
-          )}
         </div>
 
         <div className="mt-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:opacity-100">
-          <Button
-            variant={isSoldOut ? "ghost" : "primary"}
-            size="sm"
-            className="w-full"
-            disabled={isSoldOut}
-          >
-            {isSoldOut ? "Indisponível" : "Adicionar à sacola"}
+          <Button variant="primary" size="sm" className="w-full" disabled>
+            Adicionar à sacola
           </Button>
         </div>
       </div>

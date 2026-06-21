@@ -100,7 +100,9 @@ export default function AdminCategoriesPage() {
                       {category.isActive ? "Ativo" : "Inativo"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-yora-muted">0</td>
+                  <td className="px-4 py-3 text-yora-muted">
+                    {category._count?.products ?? 0}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Link

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Banners", href: "/admin/banners" },
   { label: "Categorias", href: "/admin/categories" },
+  { label: "Produtos", href: "/admin/products" },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

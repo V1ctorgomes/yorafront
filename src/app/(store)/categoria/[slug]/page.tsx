@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { ProductCard } from "@/components/home/ProductCard";
 import { fetchCategoryBySlug } from "@/lib/api/categories";
+import { fetchProducts } from "@/lib/api/products";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -13,6 +15,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   if (!category) {
     notFound();
   }
+
+  const products = await fetchProducts({ category: slug });
 
   return (
     <div>
@@ -64,14 +68,22 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24 lg:px-8">
-        <div className="border border-dashed border-yora-charcoal/15 bg-yora-cream px-6 py-16 text-center">
-          <p className="font-display text-2xl text-yora-charcoal">
-            Produtos em breve
-          </p>
-          <p className="mt-3 text-sm text-yora-muted">
-            Esta categoria está pronta para receber produtos no próximo módulo.
-          </p>
-        </div>
+        {products.length === 0 ? (
+          <div className="border border-dashed border-yora-charcoal/15 bg-yora-cream px-6 py-16 text-center">
+            <p className="font-display text-2xl text-yora-charcoal">
+              Nenhum produto disponível
+            </p>
+            <p className="mt-3 text-sm text-yora-muted">
+              Em breve teremos novidades nesta categoria.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -1,5 +1,32 @@
 export type ProductBadge = "new" | "sale" | "sold-out";
 
+export interface ProductCategoryRef {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  shortDescription: string;
+  coverImage: string;
+  basePrice: number;
+  isNew: boolean;
+  isFeatured: boolean;
+  category: ProductCategoryRef;
+  description?: string;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+}
+
+export interface AdminProduct extends Product {
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Banner {
   id: string;
   title: string;
@@ -30,17 +57,9 @@ export interface AdminCategory extends Category {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  image: string;
-  price: number;
-  isNew?: boolean;
-  badge?: ProductBadge;
-  compareAtPrice?: number;
+  _count?: {
+    products: number;
+  };
 }
 
 export interface NavItem {
@@ -66,6 +85,21 @@ export interface CategoryFormData {
   imageUrl: string;
   displayOrder: number;
   isActive: boolean;
+}
+
+export interface ProductFormData {
+  name: string;
+  slug: string;
+  shortDescription: string;
+  description: string;
+  categoryId: string;
+  basePrice: number;
+  coverImage: string;
+  isFeatured: boolean;
+  isNew: boolean;
+  isActive: boolean;
+  seoTitle: string;
+  seoDescription: string;
 }
 
 export interface AuthResponse {

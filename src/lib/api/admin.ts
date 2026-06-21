@@ -3,9 +3,11 @@ import { getApiUrl } from "@/lib/env";
 import type {
   AdminBanner,
   AdminCategory,
+  AdminProduct,
   AuthResponse,
   BannerFormData,
   CategoryFormData,
+  ProductFormData,
 } from "@/types";
 
 class ApiError extends Error {
@@ -139,6 +141,47 @@ export function updateCategory(id: string, data: Partial<CategoryFormData>) {
 
 export function deleteCategory(id: string) {
   return adminFetch<{ message: string }>(`/admin/categories/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function fetchAdminProducts() {
+  return adminFetch<AdminProduct[]>("/admin/products");
+}
+
+export function fetchAdminProduct(id: string) {
+  return adminFetch<AdminProduct>(`/admin/products/${id}`);
+}
+
+export function createProduct(data: {
+  name: string;
+  slug?: string;
+  shortDescription: string;
+  description: string;
+  categoryId: string;
+  basePrice: number;
+  coverImage: string;
+  isFeatured?: boolean;
+  isNew?: boolean;
+  isActive?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+}) {
+  return adminFetch<AdminProduct>("/admin/products", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateProduct(id: string, data: Partial<ProductFormData>) {
+  return adminFetch<AdminProduct>(`/admin/products/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteProduct(id: string) {
+  return adminFetch<{ message: string }>(`/admin/products/${id}`, {
     method: "DELETE",
   });
 }
