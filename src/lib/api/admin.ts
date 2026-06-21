@@ -2,8 +2,10 @@ import { getAuthToken } from "@/lib/auth";
 import { getApiUrl } from "@/lib/env";
 import type {
   AdminBanner,
+  AdminCategory,
   AuthResponse,
   BannerFormData,
+  CategoryFormData,
 } from "@/types";
 
 class ApiError extends Error {
@@ -102,6 +104,41 @@ export function updateBanner(id: string, data: Partial<BannerFormData>) {
 
 export function deleteBanner(id: string) {
   return adminFetch<{ message: string }>(`/admin/banners/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function fetchAdminCategories() {
+  return adminFetch<AdminCategory[]>("/admin/categories");
+}
+
+export function fetchAdminCategory(id: string) {
+  return adminFetch<AdminCategory>(`/admin/categories/${id}`);
+}
+
+export function createCategory(data: {
+  name: string;
+  slug?: string;
+  description?: string;
+  imageUrl?: string;
+  displayOrder?: number;
+  isActive?: boolean;
+}) {
+  return adminFetch<AdminCategory>("/admin/categories", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateCategory(id: string, data: Partial<CategoryFormData>) {
+  return adminFetch<AdminCategory>(`/admin/categories/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteCategory(id: string) {
+  return adminFetch<{ message: string }>(`/admin/categories/${id}`, {
     method: "DELETE",
   });
 }

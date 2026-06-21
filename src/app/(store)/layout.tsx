@@ -1,5 +1,5 @@
 import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
+import { HeaderWrapper } from "@/components/layout/HeaderWrapper";
 
 export default function StoreLayout({
   children,
@@ -8,7 +8,7 @@ export default function StoreLayout({
 }>) {
   return (
     <div className="flex min-h-full flex-col">
-      <Header />
+      <HeaderWrapper />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>

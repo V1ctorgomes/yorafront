@@ -17,11 +17,19 @@ export interface AdminBanner extends Banner {
   updatedAt: string;
 }
 
-export interface Collection {
+export interface Category {
   id: string;
   name: string;
   slug: string;
-  image: string;
+  description: string | null;
+  imageUrl: string | null;
+  displayOrder: number;
+}
+
+export interface AdminCategory extends Category {
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Product {
@@ -47,6 +55,15 @@ export interface BannerFormData {
   mobileImageUrl: string;
   buttonText: string;
   buttonLink: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
+export interface CategoryFormData {
+  name: string;
+  slug: string;
+  description: string;
+  imageUrl: string;
   displayOrder: number;
   isActive: boolean;
 }

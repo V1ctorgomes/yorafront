@@ -4,19 +4,25 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { NavItem } from "@/types";
+import type { Category } from "@/types";
 
-const navItems: NavItem[] = [
-  { label: "Novidades", href: "/novidades" },
-  { label: "Coleções", href: "/colecoes" },
-  { label: "Leggings", href: "/leggings" },
-  { label: "Tops", href: "/tops" },
-  { label: "Conjuntos", href: "/conjuntos" },
-  { label: "Sale", href: "/sale" },
-];
+interface HeaderProps {
+  categories?: Category[];
+}
 
-export function Header() {
+export function Header({ categories = [] }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const categoryLinks = categories.map((category) => ({
+    label: category.name,
+    href: `/categoria/${category.slug}`,
+  }));
+
+  const navItems = [
+    { label: "Novidades", href: "/novidades" },
+    ...categoryLinks,
+    { label: "Sale", href: "/sale" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-yora-cream/95 backdrop-blur-md">
@@ -43,7 +49,7 @@ export function Header() {
           YORA
         </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex">
+        <nav className="hidden items-center gap-6 xl:gap-8 lg:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -108,7 +114,7 @@ export function Header() {
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 px-5 py-6">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-5 py-6">
           {navItems.map((item) => (
             <Link
               key={item.href}

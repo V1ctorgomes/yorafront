@@ -6,7 +6,10 @@ import { LogOut } from "lucide-react";
 import { clearAuthToken } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
-const navItems = [{ label: "Banners", href: "/admin/banners" }];
+const navItems = [
+  { label: "Banners", href: "/admin/banners" },
+  { label: "Categorias", href: "/admin/categories" },
+];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
