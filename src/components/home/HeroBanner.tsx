@@ -203,7 +203,6 @@ export function HeroBannerCarousel({ banners }: HeroBannerCarouselProps) {
           const isActive = index === activeIndex;
           const isLeaving = isAnimating && index === previousIndex;
           const isEntering = isAnimating && isActive && previousIndex !== null;
-          const isIdleActive = isActive && !isAnimating;
           const desktopImage = banner.imageUrl;
           const mobileImage = banner.mobileImageUrl ?? banner.imageUrl;
 
@@ -218,14 +217,14 @@ export function HeroBannerCarousel({ banners }: HeroBannerCarouselProps) {
                 isLeaving && direction === "prev" && "animate-banner-slide-out-prev z-10",
                 isEntering && direction === "next" && "animate-banner-slide-in-next z-20",
                 isEntering && direction === "prev" && "animate-banner-slide-in-prev z-20",
-                isIdleActive && "z-10 opacity-100",
+                isActive && !isAnimating && !isEntering && "z-10 opacity-100",
               )}
               aria-hidden={!isActive}
             >
               <div
                 className={cn(
-                  "relative h-full w-full",
-                  isIdleActive && "animate-banner-image-zoom",
+                  "relative h-full w-full overflow-hidden",
+                  isActive && "animate-banner-image-zoom",
                 )}
               >
                 <Image
