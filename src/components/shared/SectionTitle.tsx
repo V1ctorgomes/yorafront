@@ -16,7 +16,7 @@ export function SectionTitle({
   return (
     <div
       className={cn(
-        "mb-6 md:mb-8",
+        "mb-3 md:mb-4",
         align === "center" && "text-center",
         className,
       )}
@@ -25,7 +25,12 @@ export function SectionTitle({
         {title}
       </h2>
       {subtitle && (
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-yora-muted md:text-base">
+        <p
+          className={cn(
+            "mx-auto mt-2 max-w-xl text-sm leading-relaxed text-yora-muted md:text-base",
+            align === "left" && "mx-0",
+          )}
+        >
           {subtitle}
         </p>
       )}

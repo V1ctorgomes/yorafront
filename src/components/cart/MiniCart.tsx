@@ -22,44 +22,37 @@ export function MiniCart() {
 
   useBodyScrollLock(miniCartOpen);
 
-  if (!mounted) return null;
+  if (!mounted || !miniCartOpen) return null;
 
   return createPortal(
     <>
       <div
-        className={cn(
-          "fixed inset-0 z-[60] bg-yora-charcoal/40 transition-opacity duration-300",
-          miniCartOpen
-            ? "opacity-100"
-            : "pointer-events-none opacity-0",
-        )}
+        className="fixed inset-0 z-[200] bg-yora-charcoal/50"
         onClick={() => setMiniCartOpen(false)}
-        aria-hidden={!miniCartOpen}
+        aria-hidden={false}
       />
 
       <aside
-        className={cn(
-          "fixed top-0 right-0 z-[61] flex h-dvh w-[min(420px,100vw)] flex-col bg-yora-cream shadow-2xl transition-transform duration-300 ease-out",
-          miniCartOpen ? "translate-x-0" : "pointer-events-none translate-x-full",
-        )}
-        aria-hidden={!miniCartOpen}
+        className="fixed top-0 right-0 z-[201] isolate flex h-dvh w-[min(420px,100vw)] flex-col overflow-hidden bg-yora-cream shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Sacola"
       >
-        <div className="flex items-center justify-between border-b border-yora-charcoal/10 px-5 py-4">
-          <h2 className="font-display text-xl text-yora-charcoal">Sacola</h2>
-          <button
-            type="button"
-            onClick={() => setMiniCartOpen(false)}
-            className="p-2 text-yora-muted hover:text-yora-charcoal"
-            aria-label="Fechar sacola"
-          >
-            <X className="h-5 w-5" />
-          </button>
+        <div className="relative z-10 shrink-0 border-b border-yora-charcoal/10 bg-yora-cream px-5 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-xl text-yora-charcoal">Sacola</h2>
+            <button
+              type="button"
+              onClick={() => setMiniCartOpen(false)}
+              className="p-2 text-yora-muted hover:text-yora-charcoal"
+              aria-label="Fechar sacola"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-5">
+        <div className="relative z-10 min-h-0 flex-1 overflow-y-auto bg-yora-cream px-5 py-5">
           {cart.items.length === 0 ? (
             <p className="text-sm text-yora-muted">Sua sacola está vazia.</p>
           ) : (
@@ -93,7 +86,7 @@ export function MiniCart() {
           )}
         </div>
 
-        <div className="border-t border-yora-charcoal/10 px-5 py-5">
+        <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-yora-cream px-5 py-5">
           <div className="mb-4 flex items-center justify-between text-sm">
             <span className="text-yora-muted">Subtotal</span>
             <span className="font-medium text-yora-charcoal">

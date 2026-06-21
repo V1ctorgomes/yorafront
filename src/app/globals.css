@@ -175,13 +175,7 @@ body {
   animation: banner-dot-progress linear forwards;
 }
 
-:root {
-  --page-exit-duration: 200ms;
-  --page-enter-duration: 360ms;
-  --page-enter-delay: 90ms;
-}
-
-@keyframes page-fade-out {
+@keyframes page-route-out {
   from {
     opacity: 1;
     transform: translateY(0);
@@ -189,14 +183,14 @@ body {
 
   to {
     opacity: 0;
-    transform: translateY(-12px);
+    transform: translateY(-10px);
   }
 }
 
-@keyframes page-fade-in {
+@keyframes page-route-in {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(14px);
   }
 
   to {
@@ -205,36 +199,18 @@ body {
   }
 }
 
-::view-transition-old(.page-out),
-::view-transition-old(root) {
-  animation: var(--page-exit-duration) cubic-bezier(0.4, 0, 0.2, 1) both
-    page-fade-out;
+.animate-page-route-out {
+  animation: page-route-out 240ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
 }
 
-::view-transition-new(.page-in),
-::view-transition-new(root) {
-  animation: var(--page-enter-duration) cubic-bezier(0.22, 1, 0.36, 1)
-    var(--page-enter-delay) both page-fade-in;
-}
-
-::view-transition-group(site-header) {
-  animation: none;
-  z-index: 100;
-}
-
-::view-transition-old(site-header) {
-  display: none;
-}
-
-::view-transition-new(site-header) {
-  animation: none;
+.animate-page-route-in {
+  animation: page-route-in 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(*),
-  ::view-transition-new(*),
-  ::view-transition-group(*) {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0s !important;
+  .animate-page-route-out,
+  .animate-page-route-in {
+    animation: none !important;
   }
 }

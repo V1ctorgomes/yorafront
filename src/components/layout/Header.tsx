@@ -45,44 +45,36 @@ export function Header({ categories = [] }: HeaderProps) {
 
   const mobileMenu =
     mounted &&
+    mobileOpen &&
     createPortal(
       <>
         <div
-          className={cn(
-            "fixed inset-0 z-[60] bg-yora-charcoal/40 transition-opacity duration-300 lg:hidden",
-            mobileOpen
-              ? "opacity-100"
-              : "pointer-events-none opacity-0",
-          )}
+          className="fixed inset-0 z-[200] bg-yora-charcoal/50 lg:hidden"
           onClick={() => setMobileOpen(false)}
-          aria-hidden={!mobileOpen}
+          aria-hidden={false}
         />
 
         <aside
-          className={cn(
-            "fixed top-0 left-0 z-[61] flex h-dvh w-[min(320px,85vw)] flex-col bg-yora-cream transition-transform duration-300 ease-out lg:hidden",
-            mobileOpen
-              ? "translate-x-0"
-              : "pointer-events-none -translate-x-full",
-          )}
-          aria-hidden={!mobileOpen}
+          className="fixed top-0 left-0 z-[201] isolate flex h-dvh w-[min(320px,85vw)] flex-col overflow-hidden bg-yora-cream lg:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
         >
-          <div className="flex items-center justify-between border-b border-yora-charcoal/10 px-5 py-4">
-            <span className="font-display text-xl tracking-[0.25em]">YORA</span>
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="p-2"
-              aria-label="Fechar menu"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <div className="relative z-10 shrink-0 border-b border-yora-charcoal/10 bg-yora-cream px-5 py-4">
+            <div className="flex items-center justify-between">
+              <span className="font-display text-xl tracking-[0.25em]">YORA</span>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="p-2"
+                aria-label="Fechar menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
-          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-5 py-6">
+          <nav className="relative z-10 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto bg-yora-cream px-5 py-6">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -95,7 +87,7 @@ export function Header({ categories = [] }: HeaderProps) {
             ))}
           </nav>
 
-          <div className="border-t border-yora-charcoal/10 px-5 py-6">
+          <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-yora-cream px-5 py-6">
             <Link
               href="/conta"
               onClick={() => setMobileOpen(false)}
@@ -111,10 +103,7 @@ export function Header({ categories = [] }: HeaderProps) {
     );
 
   return (
-    <header
-      className="sticky top-0 z-50 bg-yora-cream/95 backdrop-blur-md"
-      style={{ viewTransitionName: "site-header" }}
-    >
+    <header className="sticky top-0 z-50 bg-yora-cream/95 backdrop-blur-md">
       <div className="border-b border-yora-charcoal/10 bg-yora-charcoal text-yora-cream">
         <p className="px-4 py-2 text-center text-[11px] tracking-widest uppercase">
           Frete grátis acima de R$349 · 5% OFF no Pix · Parcelamento em 6x
