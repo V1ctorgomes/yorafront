@@ -7,7 +7,7 @@ export function BrandStory() {
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:px-6 md:py-24 lg:px-8">
         <div className="relative aspect-[4/5] overflow-hidden">
           <Image
-            src="https://images.unsplash.com/photo-1599447421418-a685d26aa2ee?w=800&q=80"
+            src="https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&q=80"
             alt="Mulher vestindo peças Yora"
             fill
             className="object-cover"

@@ -26,7 +26,7 @@ export const featuredProducts: Product[] = [
     name: "Conjunto Aura",
     slug: "conjunto-aura",
     image:
-      "https://images.unsplash.com/photo-1518310383802-640c2eda621a?w=600&q=80",
+      "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=600&q=80",
     price: 459.9,
     compareAtPrice: 529.9,
     badge: "sale",
@@ -36,7 +36,7 @@ export const featuredProducts: Product[] = [
     name: "Macacão Slim",
     slug: "macacao-slim",
     image:
-      "https://images.unsplash.com/photo-1594381898411-846e7d193bfb?w=600&q=80",
+      "https://images.unsplash.com/photo-1486218119243-13883505764c?w=600&q=80",
     price: 359.9,
     isNew: true,
     badge: "new",
@@ -46,7 +46,7 @@ export const featuredProducts: Product[] = [
     name: "Short Performance",
     slug: "short-performance",
     image:
-      "https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=600&q=80",
+      "https://images.unsplash.com/photo-1556906781-9a412961c28c?w=600&q=80",
     price: 179.9,
   },
   {

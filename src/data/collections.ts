@@ -27,6 +27,6 @@ export const collections: Collection[] = [
     name: "Pilates",
     slug: "pilates",
     image:
-      "https://images.unsplash.com/photo-1599901860904-17e06ed708a2?w=800&q=80",
+      "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&q=80",
   },
 ];
