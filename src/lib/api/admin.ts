@@ -14,6 +14,11 @@ import type {
   ProductVariant,
   VariantFormData,
   ImageFormData,
+  AdminOrderDetail,
+  AdminOrderStatus,
+  AdminOrdersDashboard,
+  AdminOrdersQuery,
+  AdminOrdersResponse,
 } from "@/types";
 
 class ApiError extends Error {
@@ -319,6 +324,43 @@ export function updateProductImage(
 export function deleteProductImage(id: string) {
   return adminFetch<{ message: string }>(`/admin/images/${id}`, {
     method: "DELETE",
+  });
+}
+
+function buildOrdersQuery(params: AdminOrdersQuery = {}) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.set(key, String(value));
+    }
+  });
+
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
+export function fetchAdminOrdersDashboard() {
+  return adminFetch<AdminOrdersDashboard>("/admin/orders/dashboard");
+}
+
+export function fetchAdminOrders(params: AdminOrdersQuery = {}) {
+  return adminFetch<AdminOrdersResponse>(
+    `/admin/orders${buildOrdersQuery(params)}`,
+  );
+}
+
+export function fetchAdminOrder(id: string) {
+  return adminFetch<AdminOrderDetail>(`/admin/orders/${id}`);
+}
+
+export function updateAdminOrderStatus(
+  id: string,
+  status: AdminOrderStatus,
+) {
+  return adminFetch<AdminOrderDetail>(`/admin/orders/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
   });
 }
 

@@ -208,6 +208,16 @@ export interface Cart {
 
 export type ShippingMethod = "pac" | "sedex" | "pickup";
 
+export type OrderStatusValue =
+  | "PENDING"
+  | "WAITING_PAYMENT"
+  | "PAID"
+  | "PROCESSING"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED"
+  | "REFUNDED";
+
 export interface CheckoutCustomer {
   name: string;
   email: string;
@@ -266,6 +276,96 @@ export interface Order {
   createdAt: string;
   items: OrderItem[];
   address: OrderAddress | null;
+}
+
+export type AdminOrderStatus = OrderStatusValue;
+
+export interface AdminOrderListItem {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  status: AdminOrderStatus;
+  itemCount: number;
+  total: number;
+  shippingMethod: ShippingMethod;
+  shippingLabel: string;
+  createdAt: string;
+}
+
+export interface AdminOrdersMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface AdminOrdersResponse {
+  data: AdminOrderListItem[];
+  meta: AdminOrdersMeta;
+}
+
+export interface AdminOrdersDashboard {
+  counts: {
+    waitingPayment: number;
+    processing: number;
+    shipped: number;
+    delivered: number;
+    cancelled: number;
+  };
+  summary: {
+    totalOrders: number;
+    totalRevenue: number;
+    averageTicket: number;
+  };
+}
+
+export interface AdminOrderStatusHistoryEntry {
+  id: string;
+  previousStatus: AdminOrderStatus | null;
+  newStatus: AdminOrderStatus;
+  adminEmail: string;
+  createdAt: string;
+}
+
+export interface AdminOrderDetail {
+  id: string;
+  orderNumber: string;
+  status: AdminOrderStatus;
+  allowedStatuses: AdminOrderStatus[];
+  customer: CheckoutCustomer;
+  shippingMethod: ShippingMethod;
+  shippingLabel: string;
+  subtotal: number;
+  shippingPrice: number;
+  discount: number;
+  total: number;
+  itemCount: number;
+  createdAt: string;
+  updatedAt: string;
+  items: Array<
+    OrderItem & {
+      id: string;
+      color: string | null;
+      size: string | null;
+      imageUrl: string | null;
+    }
+  >;
+  address: OrderAddress | null;
+  statusHistory: AdminOrderStatusHistoryEntry[];
+}
+
+export interface AdminOrdersQuery {
+  search?: string;
+  status?: AdminOrderStatus;
+  dateFrom?: string;
+  dateTo?: string;
+  minTotal?: string;
+  maxTotal?: string;
+  shippingMethod?: ShippingMethod;
+  sort?: "newest" | "oldest" | "highest" | "lowest";
+  page?: number;
+  limit?: number;
 }
 
 export interface ShippingOption {
