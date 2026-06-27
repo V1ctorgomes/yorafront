@@ -89,7 +89,7 @@ export function Header({ categories = [] }: HeaderProps) {
 
           <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-yora-cream px-5 py-6">
             <Link
-              href="/conta"
+              href="/minha-conta"
               onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 text-sm tracking-wide text-yora-charcoal"
             >
@@ -149,7 +149,7 @@ export function Header({ categories = [] }: HeaderProps) {
             <Search className="h-5 w-5" />
           </button>
           <Link
-            href="/conta"
+            href="/minha-conta"
             className="hidden p-2 text-yora-charcoal transition-colors hover:text-yora-taupe sm:block"
             aria-label="Minha conta"
           >

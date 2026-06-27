@@ -25,7 +25,7 @@ export default function LoginPage() {
 
     try {
       await loginCustomer(email, password);
-      router.push("/conta");
+      router.push("/minha-conta");
     } catch {
       setError("E-mail ou senha inválidos.");
     } finally {

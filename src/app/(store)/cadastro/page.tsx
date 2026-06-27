@@ -32,7 +32,7 @@ export default function RegisterPage() {
         phone: phone || undefined,
         password,
       });
-      router.push("/conta");
+      router.push("/minha-conta");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Não foi possível criar a conta.",

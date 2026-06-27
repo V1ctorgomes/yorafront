@@ -1,5 +1,6 @@
 import { getApiUrl } from "@/lib/env";
 import { getStoredCartToken } from "@/features/cart/cart-storage";
+import { getCustomerAccessToken } from "@/lib/auth";
 import type { CheckoutPayload, Order } from "@/types";
 
 class CheckoutApiError extends Error {
@@ -12,11 +13,13 @@ class CheckoutApiError extends Error {
 }
 
 function checkoutHeaders() {
-  const token = getStoredCartToken();
+  const cartToken = getStoredCartToken();
+  const customerToken = getCustomerAccessToken();
 
   return {
     "Content-Type": "application/json",
-    ...(token ? { "X-Cart-Token": token } : {}),
+    ...(cartToken ? { "X-Cart-Token": cartToken } : {}),
+    ...(customerToken ? { Authorization: `Bearer ${customerToken}` } : {}),
   };
 }
 

@@ -394,6 +394,7 @@ export interface UserProfile {
   avatarUrl: string | null;
   role: "ADMIN" | "CUSTOMER";
   emailVerified: boolean;
+  birthDate: string | null;
   lastLogin: string | null;
   createdAt: string;
 }
@@ -402,6 +403,95 @@ export interface UpdateProfilePayload {
   name?: string;
   phone?: string;
   avatarUrl?: string;
+  birthDate?: string;
+}
+
+export interface CustomerAddress {
+  id: string;
+  recipient: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  district: string;
+  city: string;
+  state: string;
+  country: string;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CustomerAddressPayload {
+  recipient: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement?: string;
+  district: string;
+  city: string;
+  state: string;
+  country?: string;
+  isPrimary?: boolean;
+}
+
+export interface CustomerOrderListItem {
+  orderNumber: string;
+  status: OrderStatusValue;
+  total: number;
+  itemCount: number;
+  createdAt: string;
+  shippingLabel: string;
+}
+
+export interface CustomerOrderDetail {
+  orderNumber: string;
+  status: OrderStatusValue;
+  shippingMethod: ShippingMethod;
+  shippingLabel: string;
+  subtotal: number;
+  shippingPrice: number;
+  discount: number;
+  total: number;
+  createdAt: string;
+  items: Array<{
+    productName: string;
+    sku: string;
+    color: string | null;
+    size: string | null;
+    imageUrl: string | null;
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+  }>;
+  address: OrderAddress | null;
+}
+
+export interface AccountOverview {
+  profile: UserProfile;
+  dashboard: {
+    totalOrders: number;
+    addressCount: number;
+    lastOrder: {
+      orderNumber: string;
+      status: OrderStatusValue;
+      total: number;
+      itemCount: number;
+      createdAt: string;
+    } | null;
+  };
+}
+
+export interface PaginatedMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface CustomerOrdersResponse {
+  data: CustomerOrderListItem[];
+  meta: PaginatedMeta;
 }
 
 export interface ChangePasswordPayload {
