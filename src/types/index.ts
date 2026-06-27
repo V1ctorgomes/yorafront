@@ -377,8 +377,45 @@ export interface ShippingOption {
 
 export interface AuthResponse {
   accessToken: string;
-  admin: {
+  refreshToken: string;
+  expiresIn: string;
+  user: UserProfile;
+  admin?: {
     id: string;
     email: string;
   };
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatarUrl: string | null;
+  role: "ADMIN" | "CUSTOMER";
+  emailVerified: boolean;
+  lastLogin: string | null;
+  createdAt: string;
+}
+
+export interface UpdateProfilePayload {
+  name?: string;
+  phone?: string;
+  avatarUrl?: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+  confirmPassword: string;
 }

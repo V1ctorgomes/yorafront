@@ -20,8 +20,8 @@ export default function AdminLoginPage() {
 
     try {
       const response = await loginAdmin(email, password);
-      setAuthToken(response.accessToken);
-      router.push("/admin/banners");
+      setAuthToken(response.accessToken, response.refreshToken);
+      router.push("/admin/dashboard");
     } catch {
       setError("E-mail ou senha inválidos.");
     } finally {

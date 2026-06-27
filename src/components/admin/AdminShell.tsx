@@ -7,6 +7,7 @@ import { clearAuthToken } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { label: "Dashboard", href: "/admin/dashboard" },
   { label: "Pedidos", href: "/admin/orders" },
   { label: "Banners", href: "/admin/banners" },
   { label: "Categorias", href: "/admin/categories" },

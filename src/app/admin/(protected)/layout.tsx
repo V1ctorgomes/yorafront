@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { isAuthenticated } from "@/lib/auth";
+import { isAuthenticated, isAdminToken } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/AdminShell";
 
 export default function ProtectedAdminLayout({
@@ -13,12 +13,15 @@ export default function ProtectedAdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated()) {
+    if (!isAuthenticated() || !isAdminToken()) {
       router.replace("/admin/login");
     }
   }, [router]);
 
-  if (typeof window !== "undefined" && !isAuthenticated()) {
+  if (
+    typeof window !== "undefined" &&
+    (!isAuthenticated() || !isAdminToken())
+  ) {
     return null;
   }
 
