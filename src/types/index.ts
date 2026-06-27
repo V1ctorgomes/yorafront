@@ -206,6 +206,75 @@ export interface Cart {
   total: number;
 }
 
+export type ShippingMethod = "pac" | "sedex" | "pickup";
+
+export interface CheckoutCustomer {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+export interface CheckoutAddress {
+  zipCode: string;
+  street: string;
+  number: string;
+  complement?: string;
+  district: string;
+  city: string;
+  state: string;
+  country?: string;
+}
+
+export interface CheckoutPayload {
+  customer: CheckoutCustomer;
+  address: CheckoutAddress;
+  shippingMethod: ShippingMethod;
+}
+
+export interface OrderAddress {
+  recipient: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  district: string;
+  city: string;
+  state: string;
+  country: string;
+}
+
+export interface OrderItem {
+  productId: string;
+  productVariantId: string;
+  productName: string;
+  sku: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface Order {
+  orderNumber: string;
+  status: string;
+  customer: CheckoutCustomer;
+  shippingMethod: ShippingMethod;
+  shippingLabel: string;
+  subtotal: number;
+  shippingPrice: number;
+  discount: number;
+  total: number;
+  createdAt: string;
+  items: OrderItem[];
+  address: OrderAddress | null;
+}
+
+export interface ShippingOption {
+  method: ShippingMethod;
+  label: string;
+  price: number;
+  estimatedDays: string;
+}
+
 export interface AuthResponse {
   accessToken: string;
   admin: {
