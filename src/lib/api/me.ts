@@ -8,6 +8,8 @@ import type {
   CustomerAddressPayload,
   CustomerOrderDetail,
   CustomerOrdersResponse,
+  CustomerProfile,
+  UpdateCustomerPayload,
   UpdateProfilePayload,
   UserProfile,
 } from "@/types";
@@ -70,6 +72,17 @@ async function meFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export function fetchAccountOverview() {
   return meFetch<AccountOverview>("/me");
+}
+
+export function fetchCustomerProfile() {
+  return meFetch<CustomerProfile>("/me/customer");
+}
+
+export function updateCustomerProfile(payload: UpdateCustomerPayload) {
+  return meFetch<CustomerProfile>("/me/customer", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
 }
 
 export function updateAccountProfile(payload: UpdateProfilePayload) {

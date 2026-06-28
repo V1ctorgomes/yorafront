@@ -406,6 +406,23 @@ export interface UpdateProfilePayload {
   birthDate?: string;
 }
 
+export interface CustomerProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  isGuest: boolean;
+  userId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateCustomerPayload {
+  name?: string;
+  email?: string;
+  phone?: string;
+}
+
 export interface CustomerAddress {
   id: string;
   recipient: string;
