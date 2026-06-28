@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   CHECKOUT_STEPS,
@@ -12,8 +12,15 @@ import {
   inputClassName,
   labelClassName,
 } from "@/features/checkout/constants";
+import { CheckoutAccessModal } from "@/features/checkout/CheckoutAccessModal";
+import {
+  clearCheckoutGuestMode,
+  hasCheckoutGuestMode,
+} from "@/features/checkout/checkout-session";
 import { useCart } from "@/features/cart/cart-context";
 import { CheckoutApiError, submitCheckout } from "@/lib/api/checkout";
+import { fetchCustomerProfile } from "@/lib/api/me";
+import { isCustomerAuthenticated } from "@/lib/auth";
 import { cn, formatPrice } from "@/lib/utils";
 import type {
   CheckoutAddress,
@@ -43,11 +50,56 @@ export function CheckoutFlow() {
   const router = useRouter();
   const { cart, loading, clearCart } = useCart();
   const [step, setStep] = useState(1);
+  const [skipIdentification, setSkipIdentification] = useState(false);
+  const [accessModalOpen, setAccessModalOpen] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [checkoutReady, setCheckoutReady] = useState(false);
   const [customer, setCustomer] = useState(initialCustomer);
   const [address, setAddress] = useState(initialAddress);
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("pac");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isCustomerAuthenticated()) {
+      setSkipIdentification(true);
+      setStep(2);
+      setProfileLoading(true);
+
+      fetchCustomerProfile()
+        .then((profile) => {
+          setCustomer({
+            name: profile.name,
+            email: profile.email,
+            phone: profile.phone,
+          });
+        })
+        .catch(() => {
+          setError("Não foi possível carregar seus dados. Tente novamente.");
+        })
+        .finally(() => {
+          setProfileLoading(false);
+          setCheckoutReady(true);
+        });
+
+      return;
+    }
+
+    if (hasCheckoutGuestMode()) {
+      setSkipIdentification(false);
+      setStep(1);
+      setCheckoutReady(true);
+      return;
+    }
+
+    setAccessModalOpen(true);
+  }, []);
+
+  const visibleSteps = skipIdentification
+    ? CHECKOUT_STEPS.filter((item) => item.id !== 1)
+    : CHECKOUT_STEPS;
+
+  const minStep = skipIdentification ? 2 : 1;
 
   const selectedShipping = getShippingOption(shippingMethod);
   const shippingPrice = selectedShipping?.price ?? 0;
@@ -115,6 +167,7 @@ export function CheckoutFlow() {
 
     try {
       const order = await submitCheckout(payload);
+      clearCheckoutGuestMode();
       await clearCart();
       router.push(`/pagamento/${encodeURIComponent(order.orderNumber)}`);
     } catch (err) {
@@ -128,7 +181,7 @@ export function CheckoutFlow() {
     }
   }
 
-  if (loading) {
+  if (loading || (isCustomerAuthenticated() && profileLoading) || !checkoutReady) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-16 md:px-6">
         <p className="text-sm text-yora-muted">Carregando checkout...</p>
@@ -154,6 +207,23 @@ export function CheckoutFlow() {
     );
   }
 
+  if (accessModalOpen) {
+    return (
+      <CheckoutAccessModal
+        open
+        allowClose
+        onClose={() => router.push("/carrinho")}
+        onGuestContinue={() => {
+          setCheckoutGuestMode();
+          setAccessModalOpen(false);
+          setSkipIdentification(false);
+          setStep(1);
+          setCheckoutReady(true);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 md:px-6 md:py-16 lg:px-8">
       <div className="mb-10">
@@ -164,7 +234,7 @@ export function CheckoutFlow() {
       </div>
 
       <div className="mb-10 flex flex-wrap gap-3">
-        {CHECKOUT_STEPS.map((item) => (
+        {visibleSteps.map((item, index) => (
           <div
             key={item.id}
             className={cn(
@@ -176,14 +246,14 @@ export function CheckoutFlow() {
                   : "border-yora-charcoal/15 text-yora-muted",
             )}
           >
-            {item.id}. {item.label}
+            {index + 1}. {item.label}
           </div>
         ))}
       </div>
 
       <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
         <form onSubmit={handleSubmit} className="space-y-8">
-          {step === 1 && (
+          {step === 1 && !skipIdentification && (
             <section className="space-y-5">
               <div>
                 <h2 className="font-display text-2xl text-yora-charcoal">
@@ -442,7 +512,7 @@ export function CheckoutFlow() {
           )}
 
           <div className="flex flex-wrap gap-3">
-            {step > 1 && (
+            {step > minStep && (
               <Button
                 type="button"
                 variant="outline"

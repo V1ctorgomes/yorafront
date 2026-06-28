@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import {
   AuthCard,
@@ -13,6 +13,8 @@ import { loginCustomer } from "@/lib/api/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/minha-conta";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,7 +27,7 @@ export default function LoginPage() {
 
     try {
       await loginCustomer(email, password);
-      router.push("/minha-conta");
+      router.push(redirectTo);
     } catch {
       setError("E-mail ou senha inválidos.");
     } finally {

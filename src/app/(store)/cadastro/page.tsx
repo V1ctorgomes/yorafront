@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import {
   AuthCard,
@@ -13,6 +13,8 @@ import { registerCustomer } from "@/lib/api/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/minha-conta";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -32,7 +34,7 @@ export default function RegisterPage() {
         phone: phone || undefined,
         password,
       });
-      router.push("/minha-conta");
+      router.push(redirectTo);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Não foi possível criar a conta.",

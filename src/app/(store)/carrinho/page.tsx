@@ -1,13 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { CartLineItem } from "@/components/cart/CartLineItem";
 import { Button } from "@/components/ui/Button";
+import { CheckoutAccessModal } from "@/features/checkout/CheckoutAccessModal";
 import { useCart } from "@/features/cart/cart-context";
+import { isCustomerAuthenticated } from "@/lib/auth";
 import { formatPrice } from "@/lib/utils";
 
 export default function CartPage() {
+  const router = useRouter();
   const { cart, loading, updateItemQuantity, removeItem, clearCart } = useCart();
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+
+  function handleCheckoutClick() {
+    if (isCustomerAuthenticated()) {
+      router.push("/checkout");
+      return;
+    }
+
+    setCheckoutModalOpen(true);
+  }
 
   if (loading) {
     return (
@@ -94,7 +109,11 @@ export default function CartPage() {
                 <span>{formatPrice(cart.total)}</span>
               </div>
             </div>
-            <Button href="/checkout" className="mt-6 w-full">
+            <Button
+              type="button"
+              className="mt-6 w-full"
+              onClick={handleCheckoutClick}
+            >
               Continuar para Checkout
             </Button>
             <Link
@@ -106,6 +125,11 @@ export default function CartPage() {
           </aside>
         </div>
       )}
+
+      <CheckoutAccessModal
+        open={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+      />
     </div>
   );
 }
