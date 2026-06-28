@@ -34,7 +34,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             />
             <div className="absolute inset-0 bg-yora-charcoal/45" />
           </>
-        )}
+        ) : null}
         <div className="relative mx-auto flex min-h-[320px] max-w-7xl flex-col justify-end px-4 pb-12 md:min-h-[420px] md:px-6 md:pb-16 lg:px-8">
           <p
             className={

@@ -44,10 +44,20 @@ export function Button({
   );
 
   if (href) {
-    const { type: _type, ...linkProps } = props;
+    const { onClick } = props;
 
     return (
-      <Link href={href} className={styles} {...linkProps}>
+      <Link
+        href={href}
+        className={styles}
+        onClick={
+          onClick
+            ? (event) => {
+                onClick(event as unknown as React.MouseEvent<HTMLButtonElement>);
+              }
+            : undefined
+        }
+      >
         {children}
       </Link>
     );

@@ -150,7 +150,7 @@ export function ProductGalleryManager({
             Cor (opcional)
           </label>
           <select
-            value={form.color}
+            value={form.color ?? ""}
             onChange={(e) => setForm({ ...form, color: e.target.value })}
             className="w-full border border-yora-charcoal/20 bg-white px-3 py-2 text-sm focus:border-yora-charcoal focus:outline-none"
           >

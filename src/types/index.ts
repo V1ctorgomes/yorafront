@@ -186,7 +186,7 @@ export interface ImageFormData {
   imageUrl: string;
   altText: string;
   displayOrder: number;
-  color: string;
+  color?: string | null;
 }
 
 export interface CartItem {
