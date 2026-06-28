@@ -100,7 +100,7 @@ export function CategoryForm({
 
       <div>
         <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-          URL da imagem
+          Imagem do card (thumbnail)
         </label>
         <input
           type="url"
@@ -109,6 +109,26 @@ export function CategoryForm({
           placeholder="https://"
           className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
         />
+        <p className="mt-1 text-xs text-yora-muted">
+          Usada nos cards da home. Recomendado: proporção 3:4, ~800px de largura.
+        </p>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
+          Banner da página
+        </label>
+        <input
+          type="url"
+          value={form.bannerImageUrl}
+          onChange={(e) => updateField("bannerImageUrl", e.target.value)}
+          placeholder="https://"
+          className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
+        />
+        <p className="mt-1 text-xs text-yora-muted">
+          Exibido no topo da página da categoria no desktop. Recomendado: ~1600px
+          ou mais de largura.
+        </p>
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">

@@ -50,14 +50,6 @@ function readStoredViewMode(): OrdersViewMode {
   return stored === "kanban" ? "kanban" : "list";
 }
 
-function formatSyncTime(value: Date) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(value);
-}
-
 export default function AdminOrdersPage() {
   const [viewMode, setViewMode] = useState<OrdersViewMode>("list");
   const [filters, setFilters] = useState<AdminOrdersQuery>(initialFilters);
@@ -133,7 +125,7 @@ export default function AdminOrdersPage() {
     });
   }, [loadData]);
 
-  const { lastSyncedAt, syncing } = useAdminOrdersSync({
+  useAdminOrdersSync({
     onSync: silentSync,
     isPaused: () => Boolean(updatingOrderId) || isDraggingKanban,
   });
@@ -195,23 +187,9 @@ export default function AdminOrdersPage() {
     <div>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-display text-3xl text-yora-charcoal">Pedidos</h1>
-            <span className="inline-flex items-center gap-2 rounded-full border border-yora-charcoal/10 bg-yora-cream px-3 py-1 text-xs text-yora-muted">
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  syncing ? "animate-pulse bg-amber-500" : "bg-green-500"
-                }`}
-              />
-              {syncing
-                ? "Atualizando..."
-                : lastSyncedAt
-                  ? `Ao vivo · ${formatSyncTime(lastSyncedAt)}`
-                  : "Ao vivo"}
-            </span>
-          </div>
+          <h1 className="font-display text-3xl text-yora-charcoal">Pedidos</h1>
           <p className="mt-1 text-sm text-yora-muted">
-            Acompanhe e gerencie o ciclo de vida das compras em tempo real.
+            Acompanhe e gerencie o ciclo de vida das compras.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

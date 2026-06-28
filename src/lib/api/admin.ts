@@ -138,6 +138,7 @@ export function createCategory(data: {
   slug?: string;
   description?: string;
   imageUrl?: string;
+  bannerImageUrl?: string;
   displayOrder?: number;
   isActive?: boolean;
 }) {
@@ -307,6 +308,7 @@ export function createProductImage(
     imageUrl: string;
     altText?: string;
     displayOrder?: number;
+    color?: string | null;
   },
 ) {
   return adminFetch<ProductImage>(`/admin/products/${productId}/images`, {

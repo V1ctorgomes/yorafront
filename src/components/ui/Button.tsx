@@ -44,8 +44,10 @@ export function Button({
   );
 
   if (href) {
+    const { type: _type, ...linkProps } = props;
+
     return (
-      <Link href={href} className={styles}>
+      <Link href={href} className={styles} {...linkProps}>
         {children}
       </Link>
     );

@@ -1,7 +1,14 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import {
+  buildProductGalleryImages,
+  DraggableImageCarousel,
+} from "@/components/product/DraggableImageCarousel";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -10,25 +17,27 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
+  const gallery = useMemo(
+    () => buildProductGalleryImages(product.coverImage, product.name, product.images, { limit: 3 }),
+    [product],
+  );
+
   return (
     <article className="group flex flex-col">
-      <Link
-        href={`/produto/${product.slug}`}
-        className="relative aspect-[3/4] overflow-hidden bg-yora-sand"
-      >
-        <Image
-          src={product.coverImage}
+      <div className="relative">
+        <DraggableImageCarousel
+          images={gallery}
           alt={product.name}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          onNavigate={() => router.push(`/produto/${product.slug}`)}
         />
         {product.isNew && (
-          <div className="absolute top-3 left-3">
+          <div className="pointer-events-none absolute top-3 left-3 z-10">
             <Badge type="new" />
           </div>
         )}
-      </Link>
+      </div>
 
       <div className="mt-4 flex flex-1 flex-col">
         <Link href={`/produto/${product.slug}`}>

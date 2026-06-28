@@ -21,6 +21,7 @@ export default function EditCategoryPage() {
           slug: category.slug,
           description: category.description ?? "",
           imageUrl: category.imageUrl ?? "",
+          bannerImageUrl: category.bannerImageUrl ?? "",
           displayOrder: category.displayOrder,
           isActive: category.isActive,
         });
@@ -41,6 +42,7 @@ export default function EditCategoryPage() {
         slug: form.slug,
         description: form.description || undefined,
         imageUrl: form.imageUrl || undefined,
+        bannerImageUrl: form.bannerImageUrl || undefined,
         displayOrder: form.displayOrder,
         isActive: form.isActive,
       });

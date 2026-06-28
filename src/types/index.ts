@@ -16,6 +16,7 @@ export interface ProductImage {
   id: string;
   imageUrl: string;
   altText: string | null;
+  color?: string | null;
   displayOrder: number;
 }
 
@@ -105,6 +106,7 @@ export interface Category {
   slug: string;
   description: string | null;
   imageUrl: string | null;
+  bannerImageUrl?: string | null;
   displayOrder: number;
 }
 
@@ -138,6 +140,7 @@ export interface CategoryFormData {
   slug: string;
   description: string;
   imageUrl: string;
+  bannerImageUrl: string;
   displayOrder: number;
   isActive: boolean;
 }
@@ -183,6 +186,7 @@ export interface ImageFormData {
   imageUrl: string;
   altText: string;
   displayOrder: number;
+  color: string;
 }
 
 export interface CartItem {

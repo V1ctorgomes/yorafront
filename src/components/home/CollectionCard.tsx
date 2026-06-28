@@ -23,6 +23,7 @@ export function CollectionCard({
   className,
 }: CollectionCardProps) {
   const isCarousel = variant === "carousel";
+  const cardImage = collection.thumbnailImageUrl || collection.bannerImageUrl;
 
   return (
     <Link
@@ -40,7 +41,7 @@ export function CollectionCard({
       )}
     >
       <Image
-        src={collection.bannerImageUrl}
+        src={cardImage}
         alt={collection.name}
         fill
         className={cn(

@@ -100,7 +100,7 @@ export function CollectionForm({
 
       <div>
         <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-          URL do banner *
+          Banner da página *
         </label>
         <input
           type="url"
@@ -110,11 +110,15 @@ export function CollectionForm({
           placeholder="https://"
           className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
         />
+        <p className="mt-1 text-xs text-yora-muted">
+          Exibido no topo da página da coleção. Recomendado: ~1600px ou mais de
+          largura.
+        </p>
       </div>
 
       <div>
         <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-          URL da thumbnail *
+          Imagem do card (thumbnail) *
         </label>
         <input
           type="url"
@@ -124,6 +128,9 @@ export function CollectionForm({
           placeholder="https://"
           className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
         />
+        <p className="mt-1 text-xs text-yora-muted">
+          Usada nos cards da home. Recomendado: proporção 3:4, ~800px de largura.
+        </p>
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">

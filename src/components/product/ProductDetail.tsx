@@ -1,9 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import {
+  buildProductGalleryImages,
+  DraggableImageCarousel,
+} from "@/components/product/DraggableImageCarousel";
 import { useCart } from "@/features/cart/cart-context";
 import { cn, formatPrice } from "@/lib/utils";
 import type { Product, ProductVariant } from "@/types";
@@ -27,20 +30,17 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
   const { addItem } = useCart();
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState("");
-  const gallery = useMemo(() => {
-    if (product.images && product.images.length > 0) {
-      return product.images;
-    }
+  const initial = getInitialSelection(variants);
+  const [selectedColor, setSelectedColor] = useState(initial.color);
+  const [selectedSize, setSelectedSize] = useState(initial.size);
 
-    return [
-      {
-        id: "cover",
-        imageUrl: product.coverImage,
-        altText: product.name,
-        displayOrder: 0,
-      },
-    ];
-  }, [product]);
+  const gallery = useMemo(
+    () =>
+      buildProductGalleryImages(product.coverImage, product.name, product.images, {
+        color: selectedColor || undefined,
+      }),
+    [product, selectedColor],
+  );
 
   const colors = useMemo(
     () => [...new Set(variants.map((variant) => variant.color))],
@@ -51,11 +51,6 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
     () => [...new Set(variants.map((variant) => variant.size))],
     [variants],
   );
-
-  const initial = getInitialSelection(variants);
-  const [selectedColor, setSelectedColor] = useState(initial.color);
-  const [selectedSize, setSelectedSize] = useState(initial.size);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const selectedVariant = variants.find(
     (variant) =>
@@ -113,47 +108,21 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
     );
   }
 
-  const activeImage = gallery[activeImageIndex] ?? gallery[0];
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-16 lg:px-8">
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
         <div>
-          <div className="relative aspect-[3/4] overflow-hidden bg-yora-sand">
-            <Image
-              src={activeImage.imageUrl}
-              alt={activeImage.altText ?? product.name}
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-          </div>
-
+          <DraggableImageCarousel
+            key={selectedColor}
+            images={gallery}
+            alt={product.name}
+            priority
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
           {gallery.length > 1 && (
-            <div className="mt-4 grid grid-cols-4 gap-3 md:grid-cols-5">
-              {gallery.map((image, index) => (
-                <button
-                  key={image.id}
-                  type="button"
-                  onClick={() => setActiveImageIndex(index)}
-                  className={cn(
-                    "relative aspect-[3/4] overflow-hidden border bg-yora-sand transition-colors",
-                    activeImageIndex === index
-                      ? "border-yora-charcoal"
-                      : "border-transparent hover:border-yora-charcoal/30",
-                  )}
-                >
-                  <Image
-                    src={image.imageUrl}
-                    alt={image.altText ?? product.name}
-                    fill
-                    className="object-cover"
-                    sizes="120px"
-                  />
-                </button>
-              ))}
-            </div>
+            <p className="mt-3 text-center text-xs text-yora-muted">
+              Arraste para ver as {gallery.length} fotos do produto
+            </p>
           )}
         </div>
 

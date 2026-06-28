@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { CartLineItem } from "@/components/cart/CartLineItem";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { useCart } from "@/features/cart/cart-context";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 import { useMounted } from "@/lib/use-mounted";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 
 export function MiniCart() {
   const {
@@ -22,14 +23,31 @@ export function MiniCart() {
 
   useBodyScrollLock(miniCartOpen);
 
+  useEffect(() => {
+    if (!miniCartOpen) return;
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMiniCartOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [miniCartOpen, setMiniCartOpen]);
+
   if (!mounted || !miniCartOpen) return null;
+
+  function closeMiniCart() {
+    setMiniCartOpen(false);
+  }
 
   return createPortal(
     <>
       <div
         className="fixed inset-0 z-[200] bg-yora-charcoal/50"
-        onClick={() => setMiniCartOpen(false)}
-        aria-hidden={false}
+        onClick={closeMiniCart}
+        aria-hidden="true"
       />
 
       <aside
@@ -37,13 +55,14 @@ export function MiniCart() {
         role="dialog"
         aria-modal="true"
         aria-label="Sacola"
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="relative z-10 shrink-0 border-b border-yora-charcoal/10 bg-yora-cream px-5 py-4">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl text-yora-charcoal">Sacola</h2>
             <button
               type="button"
-              onClick={() => setMiniCartOpen(false)}
+              onClick={closeMiniCart}
               className="p-2 text-yora-muted hover:text-yora-charcoal"
               aria-label="Fechar sacola"
             >
@@ -96,7 +115,7 @@ export function MiniCart() {
           <Button
             href="/carrinho"
             className="w-full"
-            onClick={() => setMiniCartOpen(false)}
+            onClick={closeMiniCart}
           >
             Ver Carrinho
           </Button>

@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import {
   createProductImage,
   deleteProductImage,
   fetchAdminProductImages,
+  fetchAdminProductVariants,
   updateProductImage,
 } from "@/lib/api/admin";
 import { Button } from "@/components/ui/Button";
@@ -16,6 +17,7 @@ const emptyForm: ImageFormData = {
   imageUrl: "",
   altText: "",
   displayOrder: 0,
+  color: "",
 };
 
 interface ProductGalleryManagerProps {
@@ -26,16 +28,28 @@ export function ProductGalleryManager({
   productId,
 }: ProductGalleryManagerProps) {
   const [images, setImages] = useState<ProductImage[]>([]);
+  const [colorOptions, setColorOptions] = useState<string[]>([]);
   const [form, setForm] = useState<ImageFormData>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const sortedImages = useMemo(
+    () => [...images].sort((a, b) => a.displayOrder - b.displayOrder),
+    [images],
+  );
+
   async function loadImages() {
     setLoading(true);
     try {
-      const data = await fetchAdminProductImages(productId);
-      setImages(data);
+      const [imageData, variantData] = await Promise.all([
+        fetchAdminProductImages(productId),
+        fetchAdminProductVariants(productId),
+      ]);
+      setImages(imageData);
+      setColorOptions([
+        ...new Set(variantData.map((variant) => variant.color).filter(Boolean)),
+      ]);
     } finally {
       setLoading(false);
     }
@@ -54,6 +68,7 @@ export function ProductGalleryManager({
       await createProductImage(productId, {
         imageUrl: form.imageUrl,
         altText: form.altText || undefined,
+        color: form.color || null,
       });
       setForm(emptyForm);
       await loadImages();
@@ -62,6 +77,11 @@ export function ProductGalleryManager({
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleColorChange(image: ProductImage, color: string) {
+    await updateProductImage(image.id, { color: color || null });
+    await loadImages();
   }
 
   async function handleDelete(image: ProductImage) {
@@ -73,14 +93,14 @@ export function ProductGalleryManager({
   }
 
   async function moveImage(image: ProductImage, direction: "up" | "down") {
-    const index = images.findIndex((item) => item.id === image.id);
+    const index = sortedImages.findIndex((item) => item.id === image.id);
     const targetIndex = direction === "up" ? index - 1 : index + 1;
 
-    if (targetIndex < 0 || targetIndex >= images.length) {
+    if (targetIndex < 0 || targetIndex >= sortedImages.length) {
       return;
     }
 
-    const target = images[targetIndex];
+    const target = sortedImages[targetIndex];
 
     await Promise.all([
       updateProductImage(image.id, { displayOrder: target.displayOrder }),
@@ -125,6 +145,29 @@ export function ProductGalleryManager({
           />
         </div>
 
+        <div>
+          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
+            Cor (opcional)
+          </label>
+          <select
+            value={form.color}
+            onChange={(e) => setForm({ ...form, color: e.target.value })}
+            className="w-full border border-yora-charcoal/20 bg-white px-3 py-2 text-sm focus:border-yora-charcoal focus:outline-none"
+          >
+            <option value="">Todas as cores (geral)</option>
+            {colorOptions.map((color) => (
+              <option key={color} value={color}>
+                {color}
+              </option>
+            ))}
+          </select>
+          {colorOptions.length === 0 && (
+            <p className="mt-1 text-xs text-yora-muted">
+              Cadastre variantes com cor para associar fotos a uma cor específica.
+            </p>
+          )}
+        </div>
+
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <Button type="submit" disabled={saving} size="sm">
@@ -134,13 +177,13 @@ export function ProductGalleryManager({
 
       {loading ? (
         <p className="text-sm text-yora-muted">Carregando galeria...</p>
-      ) : images.length === 0 ? (
+      ) : sortedImages.length === 0 ? (
         <p className="text-sm text-yora-muted">
           Nenhuma imagem na galeria deste produto.
         </p>
       ) : (
         <div className="space-y-3">
-          {images.map((image, index) => (
+          {sortedImages.map((image, index) => (
             <div
               key={image.id}
               className="flex items-center gap-4 border border-yora-charcoal/10 bg-yora-cream p-4"
@@ -165,6 +208,21 @@ export function ProductGalleryManager({
                 <p className="mt-1 text-xs text-yora-muted">
                   Ordem: {image.displayOrder + 1}
                 </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <label className="text-xs text-yora-muted">Cor:</label>
+                  <select
+                    value={image.color ?? ""}
+                    onChange={(e) => handleColorChange(image, e.target.value)}
+                    className="border border-yora-charcoal/20 bg-white px-2 py-1 text-xs focus:border-yora-charcoal focus:outline-none"
+                  >
+                    <option value="">Geral</option>
+                    {colorOptions.map((color) => (
+                      <option key={color} value={color}>
+                        {color}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -180,7 +238,7 @@ export function ProductGalleryManager({
                 <button
                   type="button"
                   onClick={() => moveImage(image, "down")}
-                  disabled={index === images.length - 1}
+                  disabled={index === sortedImages.length - 1}
                   className="rounded border border-yora-charcoal/15 p-2 disabled:opacity-40"
                   aria-label="Mover para baixo"
                 >

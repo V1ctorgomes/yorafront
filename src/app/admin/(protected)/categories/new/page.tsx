@@ -11,6 +11,7 @@ const initialData: CategoryFormData = {
   slug: "",
   description: "",
   imageUrl: "",
+  bannerImageUrl: "",
   displayOrder: 0,
   isActive: true,
 };
@@ -32,6 +33,7 @@ export default function NewCategoryPage() {
         slug: form.slug,
         description: form.description || undefined,
         imageUrl: form.imageUrl || undefined,
+        bannerImageUrl: form.bannerImageUrl || undefined,
         displayOrder: form.displayOrder,
         isActive: form.isActive,
       });
