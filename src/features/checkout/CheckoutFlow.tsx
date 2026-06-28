@@ -20,6 +20,7 @@ import {
 import {
   clearCheckoutGuestMode,
   hasCheckoutGuestMode,
+  setCheckoutGuestMode,
 } from "@/features/checkout/checkout-session";
 import { useCart } from "@/features/cart/cart-context";
 import { CheckoutApiError, submitCheckout } from "@/lib/api/checkout";
