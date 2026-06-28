@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CartLineItem } from "@/components/cart/CartLineItem";
 import { Button } from "@/components/ui/Button";
 import { CheckoutAccessModal } from "@/features/checkout/CheckoutAccessModal";
+import { hasPendingPaymentOrders } from "@/features/checkout/checkout-session";
 import { useCart } from "@/features/cart/cart-context";
 import { isCustomerAuthenticated } from "@/lib/auth";
 import { formatPrice } from "@/lib/utils";
@@ -14,6 +15,16 @@ export default function CartPage() {
   const router = useRouter();
   const { cart, loading, updateItemQuantity, removeItem, clearCart } = useCart();
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [hasRecentOrders, setHasRecentOrders] = useState(false);
+
+  useEffect(() => {
+    if (isCustomerAuthenticated()) {
+      setHasRecentOrders(false);
+      return;
+    }
+
+    setHasRecentOrders(hasPendingPaymentOrders());
+  }, [checkoutModalOpen]);
 
   function handleCheckoutClick() {
     if (isCustomerAuthenticated()) {
@@ -21,6 +32,10 @@ export default function CartPage() {
       return;
     }
 
+    setCheckoutModalOpen(true);
+  }
+
+  function handleResumePaymentClick() {
     setCheckoutModalOpen(true);
   }
 
@@ -64,6 +79,16 @@ export default function CartPage() {
           <Button href="/" className="mt-6">
             Continuar comprando
           </Button>
+          {!isCustomerAuthenticated() && hasRecentOrders && (
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-3"
+              onClick={handleResumePaymentClick}
+            >
+              Retomar pagamento
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
@@ -116,6 +141,16 @@ export default function CartPage() {
             >
               Continuar para Checkout
             </Button>
+            {!isCustomerAuthenticated() && hasRecentOrders && (
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-3 w-full"
+                onClick={handleResumePaymentClick}
+              >
+                Retomar pagamento
+              </Button>
+            )}
             <Link
               href="/"
               className="mt-4 block text-center text-sm text-yora-muted hover:text-yora-charcoal"
