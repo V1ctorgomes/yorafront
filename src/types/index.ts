@@ -345,6 +345,7 @@ export interface AdminOrdersDashboard {
   };
   summary: {
     totalOrders: number;
+    soldOrders: number;
     totalRevenue: number;
     averageTicket: number;
   };
