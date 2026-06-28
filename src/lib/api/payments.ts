@@ -74,7 +74,7 @@ export async function fetchPaymentByOrder(
     { cache: "no-store" },
   );
 
-  if (response.status === 404) {
+  if (response.status === 404 || response.status === 204) {
     return null;
   }
 
@@ -82,8 +82,12 @@ export async function fetchPaymentByOrder(
     await parseError(response);
   }
 
-  const data = await response.json();
-  return data as Payment | null;
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+
+  return JSON.parse(text) as Payment;
 }
 
 export async function simulatePayment(

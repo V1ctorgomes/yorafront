@@ -100,10 +100,9 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
     setError(null);
 
     try {
-      const [orderData, configData, existingPayment] = await Promise.all([
+      const [orderData, configData] = await Promise.all([
         fetchOrder(orderNumber),
         fetchPaymentConfig(),
-        fetchPaymentByOrder(orderNumber),
       ]);
 
       setOrder(orderData);
@@ -116,9 +115,14 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
         return;
       }
 
-      if (existingPayment) {
-        setPayment(existingPayment);
-        setMethod(existingPayment.paymentMethod);
+      try {
+        const existingPayment = await fetchPaymentByOrder(orderNumber);
+        if (existingPayment) {
+          setPayment(existingPayment);
+          setMethod(existingPayment.paymentMethod);
+        }
+      } catch {
+        // Pagamento anterior opcional — não bloqueia a tela
       }
     } catch (err) {
       const message =
