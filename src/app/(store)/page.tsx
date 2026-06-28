@@ -9,9 +9,15 @@ export default function HomePage() {
   return (
     <>
       <HeroBannerSection />
-      <CategoriesSection />
-      <CollectionsSection />
-      <FeaturedProductsSection />
+      
+      <div className="fluid-wrapper">
+        <div className="fluid-content">
+          <CategoriesSection />
+          <CollectionsSection />
+          <FeaturedProductsSection />
+        </div>
+      </div>
+
       <BrandStory />
       <Newsletter />
     </>
