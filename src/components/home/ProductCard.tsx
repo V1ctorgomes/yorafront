@@ -30,6 +30,7 @@ export function ProductCard({ product }: ProductCardProps) {
           images={gallery}
           alt={product.name}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          revealSecondOnHover
           onNavigate={() => router.push(`/produto/${product.slug}`)}
         />
         {product.isNew && (

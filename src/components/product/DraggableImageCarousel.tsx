@@ -24,6 +24,7 @@ interface DraggableImageCarouselProps {
   className?: string;
   aspectClassName?: string;
   showDots?: boolean;
+  revealSecondOnHover?: boolean;
   onNavigate?: () => void;
 }
 
@@ -37,6 +38,7 @@ export function DraggableImageCarousel({
   className,
   aspectClassName = "aspect-[3/4]",
   showDots = true,
+  revealSecondOnHover = false,
   onNavigate,
 }: DraggableImageCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -105,6 +107,146 @@ export function DraggableImageCarousel({
     onNavigate?.();
   }
 
+  function handleDesktopClick() {
+    onNavigate?.();
+  }
+
+  if (slideCount === 0) {
+    return null;
+  }
+
+  const hoverImage = revealSecondOnHover && slideCount >= 2 ? images[1] : null;
+
+  if (hoverImage) {
+    const primaryImage = images[0];
+
+    return (
+      <div className={cn("relative overflow-hidden bg-yora-sand", className)}>
+        <div
+          className={cn("relative hidden cursor-pointer md:block", aspectClassName)}
+          onClick={handleDesktopClick}
+          role={onNavigate ? "button" : undefined}
+          tabIndex={onNavigate ? 0 : undefined}
+          onKeyDown={
+            onNavigate
+              ? (event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onNavigate();
+                  }
+                }
+              : undefined
+          }
+        >
+          <Image
+            src={primaryImage.imageUrl}
+            alt={primaryImage.altText ?? alt}
+            fill
+            priority={priority}
+            className="object-cover transition-opacity duration-500 group-hover:opacity-0"
+            sizes={sizes}
+          />
+          <Image
+            src={hoverImage.imageUrl}
+            alt={hoverImage.altText ?? alt}
+            fill
+            className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            sizes={sizes}
+          />
+        </div>
+
+        <div className="md:hidden">
+          <CarouselSlides
+            images={images}
+            alt={alt}
+            priority={priority}
+            sizes={sizes}
+            aspectClassName={aspectClassName}
+            showDots={showDots}
+            activeIndex={activeIndex}
+            dragOffset={dragOffset}
+            isDragging={isDragging}
+            canSwipe={canSwipe}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={finishDrag}
+            onPointerCancel={finishDrag}
+            onClick={handleClick}
+            onNavigate={onNavigate}
+            onGoTo={goTo}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <CarouselSlides
+      images={images}
+      alt={alt}
+      priority={priority}
+      sizes={sizes}
+      className={className}
+      aspectClassName={aspectClassName}
+      showDots={showDots}
+      activeIndex={activeIndex}
+      dragOffset={dragOffset}
+      isDragging={isDragging}
+      canSwipe={canSwipe}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={finishDrag}
+      onPointerCancel={finishDrag}
+      onClick={handleClick}
+      onNavigate={onNavigate}
+      onGoTo={goTo}
+    />
+  );
+}
+
+interface CarouselSlidesProps {
+  images: CarouselImage[];
+  alt: string;
+  priority: boolean;
+  sizes: string;
+  className?: string;
+  aspectClassName: string;
+  showDots: boolean;
+  activeIndex: number;
+  dragOffset: number;
+  isDragging: boolean;
+  canSwipe: boolean;
+  onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerCancel: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onClick: () => void;
+  onNavigate?: () => void;
+  onGoTo: (index: number) => void;
+}
+
+function CarouselSlides({
+  images,
+  alt,
+  priority,
+  sizes,
+  className,
+  aspectClassName,
+  showDots,
+  activeIndex,
+  dragOffset,
+  isDragging,
+  canSwipe,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onPointerCancel,
+  onClick,
+  onNavigate,
+  onGoTo,
+}: CarouselSlidesProps) {
+  const slideCount = images.length;
+
   if (slideCount === 0) {
     return null;
   }
@@ -117,11 +259,11 @@ export function DraggableImageCarousel({
           aspectClassName,
           canSwipe && (isDragging ? "cursor-grabbing" : "cursor-grab"),
         )}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={finishDrag}
-        onPointerCancel={finishDrag}
-        onClick={handleClick}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerCancel}
+        onClick={onClick}
         role={onNavigate ? "button" : undefined}
         tabIndex={onNavigate ? 0 : undefined}
         onKeyDown={
@@ -169,7 +311,7 @@ export function DraggableImageCarousel({
               aria-label={`Ir para foto ${index + 1}`}
               onClick={(event) => {
                 event.stopPropagation();
-                goTo(index);
+                onGoTo(index);
               }}
               className={cn(
                 "h-1.5 rounded-full transition-all",
