@@ -15,7 +15,7 @@ export async function CategoriesSection() {
         title="Compre por categoria"
         subtitle="Encontre a peça ideal para cada momento do seu dia."
       />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 md:gap-4">
+      <div className="grid grid-cols-2 gap-5 md:grid-cols-3 md:gap-6 lg:grid-cols-4 lg:gap-8">
         {categories.map((category) => (
           <CategoryCard key={category.id} category={category} />
         ))}

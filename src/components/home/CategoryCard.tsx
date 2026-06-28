@@ -10,7 +10,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
   return (
     <Link
       href={`/categoria/${category.slug}`}
-      className="group relative block aspect-[3/4] overflow-hidden bg-yora-sand"
+      className="group relative block aspect-[4/5] overflow-hidden bg-yora-sand"
     >
       {category.imageUrl ? (
         <Image
@@ -18,7 +18,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
           alt={category.name}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"
-          sizes="(max-width: 768px) 50vw, 25vw"
+          sizes="(max-width: 768px) 50vw, 33vw"
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-yora-sand to-yora-taupe/30" />
