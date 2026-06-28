@@ -268,7 +268,7 @@ function CheckoutAddressForm({
         <label className={labelClassName}>Complemento</label>
         <input
           className={inputClassName}
-          value={address.complement}
+          value={address.complement ?? ""}
           onChange={(e) =>
             onChange({ ...address, complement: e.target.value })
           }
@@ -308,7 +308,7 @@ function CheckoutAddressForm({
           <label className={labelClassName}>País</label>
           <input
             className={inputClassName}
-            value={address.country}
+            value={address.country ?? "BR"}
             onChange={(e) => onChange({ ...address, country: e.target.value })}
           />
         </div>

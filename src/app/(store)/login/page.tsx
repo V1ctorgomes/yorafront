@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import {
   AuthCard,
   AuthFooterLink,
@@ -11,7 +11,7 @@ import {
 } from "@/components/auth/AuthCard";
 import { loginCustomer } from "@/lib/api/auth";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/minha-conta";
@@ -80,5 +80,19 @@ export default function LoginPage() {
         </div>
       </AuthForm>
     </AuthCard>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-md px-4 py-16">
+          <p className="text-sm text-yora-muted">Carregando...</p>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }
