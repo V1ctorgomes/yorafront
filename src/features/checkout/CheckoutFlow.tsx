@@ -13,13 +13,17 @@ import {
   labelClassName,
 } from "@/features/checkout/constants";
 import { CheckoutAccessModal } from "@/features/checkout/CheckoutAccessModal";
+import { CheckoutAddressStep } from "@/features/checkout/CheckoutAddressStep";
+import {
+  type AddressStepMode,
+} from "@/features/checkout/checkout-address-utils";
 import {
   clearCheckoutGuestMode,
   hasCheckoutGuestMode,
 } from "@/features/checkout/checkout-session";
 import { useCart } from "@/features/cart/cart-context";
 import { CheckoutApiError, submitCheckout } from "@/lib/api/checkout";
-import { fetchCustomerProfile } from "@/lib/api/me";
+import { createCustomerAddress, fetchCustomerProfile, MeApiError } from "@/lib/api/me";
 import { isCustomerAuthenticated } from "@/lib/auth";
 import { cn, formatPrice } from "@/lib/utils";
 import type {
@@ -56,6 +60,8 @@ export function CheckoutFlow() {
   const [checkoutReady, setCheckoutReady] = useState(false);
   const [customer, setCustomer] = useState(initialCustomer);
   const [address, setAddress] = useState(initialAddress);
+  const [addressStepValid, setAddressStepValid] = useState(false);
+  const [addressMode, setAddressMode] = useState<AddressStepMode>("new");
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("pac");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,14 +121,7 @@ export function CheckoutFlow() {
     }
 
     if (step === 2) {
-      return (
-        address.zipCode.replace(/\D/g, "").length === 8 &&
-        address.street.trim().length >= 2 &&
-        address.number.trim().length >= 1 &&
-        address.district.trim().length >= 2 &&
-        address.city.trim().length >= 2 &&
-        address.state.trim().length >= 2
-      );
+      return addressStepValid;
     }
 
     if (step === 3) {
@@ -130,7 +129,7 @@ export function CheckoutFlow() {
     }
 
     return true;
-  }, [step, customer, address, shippingMethod]);
+  }, [step, customer, addressStepValid, shippingMethod]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -138,6 +137,33 @@ export function CheckoutFlow() {
     if (step < 4) {
       if (canAdvance) {
         setError(null);
+
+        if (step === 2 && skipIdentification && addressMode === "new") {
+          setSubmitting(true);
+          try {
+            await createCustomerAddress({
+              recipient: customer.name.trim(),
+              zipCode: address.zipCode.trim(),
+              street: address.street.trim(),
+              number: address.number.trim(),
+              complement: address.complement?.trim() || undefined,
+              district: address.district.trim(),
+              city: address.city.trim(),
+              state: address.state.trim(),
+              country: address.country?.trim() || "BR",
+            });
+          } catch (err) {
+            const message =
+              err instanceof MeApiError
+                ? err.message
+                : "Não foi possível salvar o endereço. Tente novamente.";
+            setError(message);
+            setSubmitting(false);
+            return;
+          }
+          setSubmitting(false);
+        }
+
         setStep((current) => current + 1);
       }
       return;
@@ -303,110 +329,13 @@ export function CheckoutFlow() {
           )}
 
           {step === 2 && (
-            <section className="space-y-5">
-              <div>
-                <h2 className="font-display text-2xl text-yora-charcoal">
-                  Endereço de entrega
-                </h2>
-                <p className="mt-2 text-sm text-yora-muted">
-                  Em breve será possível buscar o endereço automaticamente pelo
-                  CEP.
-                </p>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label className={labelClassName}>CEP *</label>
-                  <input
-                    className={inputClassName}
-                    placeholder="00000-000"
-                    value={address.zipCode}
-                    onChange={(e) =>
-                      setAddress({ ...address, zipCode: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClassName}>Número *</label>
-                  <input
-                    className={inputClassName}
-                    value={address.number}
-                    onChange={(e) =>
-                      setAddress({ ...address, number: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className={labelClassName}>Rua *</label>
-                <input
-                  className={inputClassName}
-                  value={address.street}
-                  onChange={(e) =>
-                    setAddress({ ...address, street: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelClassName}>Complemento</label>
-                <input
-                  className={inputClassName}
-                  value={address.complement}
-                  onChange={(e) =>
-                    setAddress({ ...address, complement: e.target.value })
-                  }
-                />
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label className={labelClassName}>Bairro *</label>
-                  <input
-                    className={inputClassName}
-                    value={address.district}
-                    onChange={(e) =>
-                      setAddress({ ...address, district: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClassName}>Cidade *</label>
-                  <input
-                    className={inputClassName}
-                    value={address.city}
-                    onChange={(e) =>
-                      setAddress({ ...address, city: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label className={labelClassName}>Estado *</label>
-                  <input
-                    className={inputClassName}
-                    value={address.state}
-                    onChange={(e) =>
-                      setAddress({ ...address, state: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelClassName}>País</label>
-                  <input
-                    className={inputClassName}
-                    value={address.country}
-                    onChange={(e) =>
-                      setAddress({ ...address, country: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-            </section>
+            <CheckoutAddressStep
+              loggedIn={skipIdentification}
+              address={address}
+              onAddressChange={setAddress}
+              onModeChange={setAddressMode}
+              onValidChange={setAddressStepValid}
+            />
           )}
 
           {step === 3 && (
@@ -530,7 +459,9 @@ export function CheckoutFlow() {
                 ? submitting
                   ? "Finalizando..."
                   : "Finalizar Pedido"
-                : "Continuar"}
+                : submitting
+                  ? "Salvando..."
+                  : "Continuar"}
             </Button>
             <Link
               href="/carrinho"
