@@ -18,7 +18,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
           alt={category.name}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-105"
-          sizes="(max-width: 768px) 20vw, 18vw"
+          sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-yora-sand to-yora-taupe/30" />
