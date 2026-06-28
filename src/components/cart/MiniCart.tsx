@@ -76,7 +76,7 @@ export function MiniCart() {
 
       <aside
         className={cn(
-          "mini-cart-panel fixed top-0 right-0 z-[201] isolate flex h-dvh w-[min(420px,100vw)] flex-col overflow-hidden bg-yora-cream shadow-2xl",
+          "mini-cart-panel fixed top-0 right-0 z-[201] isolate flex h-dvh w-[min(420px,100vw)] flex-col overflow-hidden bg-yora-cream/90 backdrop-blur-2xl shadow-2xl",
           isVisible ? "mini-cart-panel-open" : "mini-cart-panel-closed",
         )}
         role="dialog"
@@ -84,7 +84,7 @@ export function MiniCart() {
         aria-label="Sacola"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="relative z-10 shrink-0 border-b border-yora-charcoal/10 bg-yora-cream px-5 py-4">
+        <div className="relative z-10 shrink-0 border-b border-yora-charcoal/10 bg-transparent px-5 py-4">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl text-yora-charcoal">Sacola</h2>
             <button
@@ -98,9 +98,16 @@ export function MiniCart() {
           </div>
         </div>
 
-        <div className="relative z-10 min-h-0 flex-1 overflow-y-auto bg-yora-cream px-5 py-5">
+        <div className="relative z-10 min-h-0 flex-1 overflow-y-auto bg-transparent px-5 py-5">
           {cart.items.length === 0 ? (
-            <p className="text-sm text-yora-muted">Sua sacola está vazia.</p>
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <div className="mb-4 rounded-full bg-yora-charcoal/5 p-4 text-yora-charcoal/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              </div>
+              <p className="text-base text-yora-charcoal font-medium">Sua sacola está vazia</p>
+              <p className="text-sm text-yora-muted mt-2 max-w-[250px]">Explore nossas coleções e encontre peças incríveis para você.</p>
+              <Button href="/colecoes" className="mt-8" onClick={closeMiniCart}>Explorar Coleções</Button>
+            </div>
           ) : (
             <div className="space-y-5">
               {cart.items.map((item) => (
@@ -132,7 +139,7 @@ export function MiniCart() {
           )}
         </div>
 
-        <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-yora-cream px-5 py-5">
+        <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-transparent px-5 py-5">
           <div className="mb-4 flex items-center justify-between text-sm">
             <span className="text-yora-muted">Subtotal</span>
             <span className="font-medium text-yora-charcoal">

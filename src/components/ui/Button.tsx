@@ -12,12 +12,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-yora-charcoal text-yora-cream hover:bg-yora-charcoal/90 border border-yora-charcoal",
+    "bg-yora-charcoal text-yora-cream hover:bg-yora-charcoal/90 border border-yora-charcoal active:scale-[0.98]",
   secondary:
-    "bg-yora-taupe text-yora-cream hover:bg-yora-taupe/90 border border-yora-taupe",
+    "bg-yora-taupe text-yora-cream hover:bg-yora-taupe/90 border border-yora-taupe active:scale-[0.98]",
   outline:
-    "bg-transparent text-yora-charcoal border border-yora-charcoal hover:bg-yora-charcoal hover:text-yora-cream",
-  ghost: "bg-transparent text-yora-charcoal hover:bg-yora-charcoal/5",
+    "bg-transparent text-yora-charcoal border border-yora-charcoal hover:bg-yora-charcoal hover:text-yora-cream active:scale-[0.98]",
+  ghost: "bg-transparent text-yora-charcoal hover:bg-yora-charcoal/5 active:scale-[0.98]",
   banner:
     "border border-yora-cream/90 bg-white/5 text-yora-cream backdrop-blur-[2px] transition-all duration-300 hover:scale-[1.02] hover:border-yora-cream hover:bg-yora-cream hover:text-yora-charcoal",
 };

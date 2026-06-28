@@ -68,7 +68,7 @@ export function CollectionsCarousel({ collections }: CollectionsCarouselProps) {
 
       <div
         className={cn(
-          "flex gap-5 transition-all duration-300 ease-out",
+          "flex gap-5 transition-all duration-300 ease-out overflow-x-auto snap-x snap-mandatory md:overflow-visible md:snap-none pb-4 md:pb-0 scrollbar-hide",
           isTransitioning && "scale-[0.98] opacity-0",
         )}
       >
@@ -82,7 +82,7 @@ export function CollectionsCarousel({ collections }: CollectionsCarouselProps) {
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             className={cn(
-              "min-w-0 transition-[flex-grow,flex-shrink] duration-[3600ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+              "min-w-0 transition-[flex-grow,flex-shrink] duration-[3600ms] ease-[cubic-bezier(0.22,1,0.36,1)] snap-center",
               hoveredIndex === null && "flex-1",
               hoveredIndex === index && "flex-[1.75]",
               hoveredIndex !== null &&

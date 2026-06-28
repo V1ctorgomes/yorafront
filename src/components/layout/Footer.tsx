@@ -67,7 +67,7 @@ export function Footer() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-yora-cream/70 transition-colors hover:text-yora-cream"
+                  className="text-sm text-yora-cream/70 transition-colors hover:text-yora-cream hover:underline hover:underline-offset-4"
                 >
                   {link.label}
                 </Link>
@@ -85,7 +85,7 @@ export function Footer() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm text-yora-cream/70 transition-colors hover:text-yora-cream"
+                  className="text-sm text-yora-cream/70 transition-colors hover:text-yora-cream hover:underline hover:underline-offset-4"
                 >
                   {link.label}
                 </Link>
