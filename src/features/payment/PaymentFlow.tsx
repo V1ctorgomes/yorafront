@@ -186,6 +186,7 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
       return;
     }
 
+    const currentOrder = order;
     let cancelled = false;
 
     async function mountCardBrick() {
@@ -210,9 +211,9 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
           "cardPaymentBrick_container",
           {
             initialization: {
-              amount: Number(order.total.toFixed(2)),
+              amount: Number(currentOrder.total.toFixed(2)),
               payer: {
-                email: order.customer.email,
+                email: currentOrder.customer.email,
               },
             },
             callbacks: {
