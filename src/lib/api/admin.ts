@@ -19,6 +19,9 @@ import type {
   AdminOrdersDashboard,
   AdminOrdersQuery,
   AdminOrdersResponse,
+  AdminPaymentsQuery,
+  AdminPaymentsResponse,
+  Payment,
 } from "@/types";
 
 class ApiError extends Error {
@@ -362,6 +365,28 @@ export function updateAdminOrderStatus(
     method: "PATCH",
     body: JSON.stringify({ status }),
   });
+}
+
+function buildPaymentsQuery(params: AdminPaymentsQuery) {
+  const searchParams = new URLSearchParams();
+
+  if (params.search) searchParams.set("search", params.search);
+  if (params.status) searchParams.set("status", params.status);
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
+
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
+export function fetchAdminPayments(params: AdminPaymentsQuery = {}) {
+  return adminFetch<AdminPaymentsResponse>(
+    `/admin/payments${buildPaymentsQuery(params)}`,
+  );
+}
+
+export function fetchAdminPayment(id: string) {
+  return adminFetch<Payment & { rawResponse?: unknown }>(`/admin/payments/${id}`);
 }
 
 export { ApiError };

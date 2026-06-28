@@ -509,3 +509,63 @@ export interface ResetPasswordPayload {
   password: string;
   confirmPassword: string;
 }
+
+export type PaymentMethodType = "PIX" | "CREDIT_CARD";
+
+export type PaymentStatusValue =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "CANCELLED"
+  | "REFUNDED";
+
+export interface PaymentPixData {
+  qrCode: string | null;
+  qrCodeBase64: string | null;
+  copyPaste: string;
+  expiresAt: string | null;
+}
+
+export interface Payment {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  orderStatus: OrderStatusValue;
+  provider: "MERCADO_PAGO";
+  providerPaymentId: string | null;
+  paymentMethod: PaymentMethodType;
+  amount: number;
+  status: PaymentStatusValue;
+  installments: number | null;
+  pix: PaymentPixData | null;
+  createdAt: string;
+  updatedAt: string;
+  rawResponse?: unknown;
+}
+
+export interface PaymentConfig {
+  publicKey: string;
+  environment: string;
+  enabled: boolean;
+}
+
+export interface CreatePaymentPayload {
+  orderNumber: string;
+  paymentMethod: PaymentMethodType;
+  token?: string;
+  paymentMethodId?: string;
+  installments?: number;
+  issuerId?: string;
+}
+
+export interface AdminPaymentsQuery {
+  search?: string;
+  status?: PaymentStatusValue;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminPaymentsResponse {
+  data: Payment[];
+  meta: PaginatedMeta;
+}

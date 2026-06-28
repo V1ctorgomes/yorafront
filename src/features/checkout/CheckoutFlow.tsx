@@ -116,9 +116,7 @@ export function CheckoutFlow() {
     try {
       const order = await submitCheckout(payload);
       await clearCart();
-      router.push(
-        `/pedido/sucesso?pedido=${encodeURIComponent(order.orderNumber)}`,
-      );
+      router.push(`/pagamento/${encodeURIComponent(order.orderNumber)}`);
     } catch (err) {
       const message =
         err instanceof CheckoutApiError
