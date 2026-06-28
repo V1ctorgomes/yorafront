@@ -33,7 +33,7 @@ interface AnimatedBannerTitleProps {
 
 function AnimatedBannerTitle({ text }: AnimatedBannerTitleProps) {
   return (
-    <h1 className="max-w-xl font-display text-4xl leading-tight text-yora-cream md:text-6xl lg:text-7xl">
+    <h1 className="max-w-xl font-display text-5xl leading-[1.1] text-yora-cream drop-shadow-sm md:text-6xl lg:text-7xl">
       {text.split("").map((char, index) => (
         <span
           key={`${text}-${index}-${char}`}
@@ -73,7 +73,7 @@ function HeroBannerContent({ banner, phase }: HeroBannerContentProps) {
       </p>
       {!isExiting && <AnimatedBannerTitle text={banner.title} />}
       {isExiting && (
-        <h1 className="max-w-xl font-display text-4xl leading-tight text-yora-cream md:text-6xl lg:text-7xl">
+        <h1 className="max-w-xl font-display text-5xl leading-[1.1] text-yora-cream drop-shadow-sm md:text-6xl lg:text-7xl">
           {banner.title}
         </h1>
       )}
@@ -248,7 +248,7 @@ export function HeroBannerCarousel({ banners }: HeroBannerCarouselProps) {
           );
         })}
 
-        <div className="absolute inset-0 z-20 bg-gradient-to-r from-yora-charcoal/60 via-yora-charcoal/30 to-transparent transition-opacity duration-700" />
+        <div className="absolute inset-0 z-20 bg-gradient-to-t from-yora-charcoal/90 via-yora-charcoal/40 to-transparent md:bg-gradient-to-t md:from-yora-charcoal/80 md:via-yora-charcoal/30 md:to-transparent transition-opacity duration-700" />
 
         <div className="relative z-30 h-full">
           <HeroBannerContent

@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --yora-cream: #faf8f5;
-  --yora-charcoal: #1a1a1a;
-  --yora-taupe: #8b7355;
-  --yora-rose: #c4a484;
-  --yora-sand: #f0ebe3;
-  --yora-muted: #6b6560;
+  --yora-cream: #fdfbf7;
+  --yora-charcoal: #111111;
+  --yora-taupe: #967c5d;
+  --yora-rose: #cfa88a;
+  --yora-sand: #f2ece4;
+  --yora-muted: #736c65;
 }
 
 @theme inline {

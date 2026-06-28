@@ -24,7 +24,7 @@ export function ProductCard({ product }: ProductCardProps) {
   );
 
   return (
-    <article className="group flex flex-col">
+    <article className="group flex flex-col p-3 rounded-xl hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300">
       <div className="relative">
         <DraggableImageCarousel
           images={gallery}
@@ -52,7 +52,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
         </div>
 
-        <div className="mt-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:opacity-100">
+        <div className="mt-4 opacity-100 md:opacity-0 md:translate-y-2 transition-all duration-300 md:group-hover:opacity-100 md:group-hover:translate-y-0">
           <Button variant="primary" size="sm" className="w-full" disabled>
             Adicionar à sacola
           </Button>

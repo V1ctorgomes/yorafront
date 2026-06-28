@@ -75,12 +75,13 @@ export function Header({ categories = [] }: HeaderProps) {
           </div>
 
           <nav className="relative z-10 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto bg-yora-cream px-5 py-6">
-            {navItems.map((item) => (
+            {navItems.map((item, index) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="border-b border-yora-charcoal/5 py-4 text-sm tracking-widest uppercase text-yora-charcoal transition-colors hover:text-yora-taupe"
+                className="animate-page-enter-forward border-b border-yora-charcoal/5 py-4 text-sm tracking-widest uppercase text-yora-charcoal transition-colors hover:text-yora-taupe"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 {item.label}
               </Link>
@@ -103,7 +104,7 @@ export function Header({ categories = [] }: HeaderProps) {
     );
 
   return (
-    <header className="sticky top-0 z-50 bg-yora-cream/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-yora-cream/70 backdrop-blur-xl border-b border-yora-charcoal/5 shadow-[0_4px_30px_rgba(0,0,0,0.02)] transition-all duration-300">
       <div className="border-b border-yora-charcoal/10 bg-yora-charcoal text-yora-cream">
         <p className="px-4 py-2 text-center text-[11px] tracking-widest uppercase">
           Frete grátis acima de R$349 · 5% OFF no Pix · Parcelamento em 6x
