@@ -112,12 +112,22 @@ export default function AccountOrdersPage() {
                     <td className="px-4 py-3">{order.itemCount}</td>
                     <td className="px-4 py-3">{formatPrice(order.total)}</td>
                     <td className="px-4 py-3">
-                      <Link
-                        href={`/minha-conta/pedidos/${encodeURIComponent(order.orderNumber)}`}
-                        className="text-yora-charcoal hover:text-yora-taupe"
-                      >
-                        Ver detalhes
-                      </Link>
+                      <div className="flex flex-wrap gap-3">
+                        {order.status === "WAITING_PAYMENT" && (
+                          <Link
+                            href={`/pagamento/${encodeURIComponent(order.orderNumber)}`}
+                            className="font-medium text-yora-charcoal hover:text-yora-taupe"
+                          >
+                            Pagar
+                          </Link>
+                        )}
+                        <Link
+                          href={`/minha-conta/pedidos/${encodeURIComponent(order.orderNumber)}`}
+                          className="text-yora-charcoal hover:text-yora-taupe"
+                        >
+                          Ver detalhes
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

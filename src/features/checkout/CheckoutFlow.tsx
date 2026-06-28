@@ -20,6 +20,7 @@ import {
 import {
   clearCheckoutGuestMode,
   hasCheckoutGuestMode,
+  rememberPendingPaymentOrder,
   setCheckoutGuestMode,
 } from "@/features/checkout/checkout-session";
 import { useCart } from "@/features/cart/cart-context";
@@ -194,6 +195,7 @@ export function CheckoutFlow() {
 
     try {
       const order = await submitCheckout(payload);
+      rememberPendingPaymentOrder(order.orderNumber);
       clearCheckoutGuestMode();
       await clearCart();
       router.push(`/pagamento/${encodeURIComponent(order.orderNumber)}`);

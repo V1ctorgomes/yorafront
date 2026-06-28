@@ -273,6 +273,7 @@ export interface Order {
   shippingPrice: number;
   discount: number;
   total: number;
+  paymentExpiresAt: string;
   createdAt: string;
   items: OrderItem[];
   address: OrderAddress | null;

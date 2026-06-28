@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { CheckoutApiError, fetchOrder } from "@/lib/api/checkout";
+import { rememberPendingPaymentOrder, clearPendingPaymentOrder } from "@/features/checkout/checkout-session";
 import {
   PaymentsApiError,
   createPayment,
@@ -36,7 +37,7 @@ declare global {
   }
 }
 
-function PixCountdown({ expiresAt }: { expiresAt: string }) {
+function PaymentCountdown({ expiresAt, label }: { expiresAt: string; label: string }) {
   const [remaining, setRemaining] = useState("");
 
   useEffect(() => {
@@ -59,7 +60,8 @@ function PixCountdown({ expiresAt }: { expiresAt: string }) {
 
   return (
     <p className="text-sm text-yora-muted">
-      Expira em: <span className="font-medium text-yora-charcoal">{remaining}</span>
+      {label}:{" "}
+      <span className="font-medium text-yora-charcoal">{remaining}</span>
     </p>
   );
 }
@@ -90,21 +92,56 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
     config !== null &&
     (!config.enabled || config.environment === "sandbox");
 
+  const paymentWindowOpen = useMemo(
+    () =>
+      order?.paymentExpiresAt
+        ? new Date(order.paymentExpiresAt).getTime() > Date.now()
+        : true,
+    [order?.paymentExpiresAt],
+  );
+
+  const isPixExpired = useMemo(
+    () =>
+      Boolean(
+        payment?.pix?.expiresAt &&
+          new Date(payment.pix.expiresAt).getTime() <= Date.now(),
+      ),
+    [payment?.pix?.expiresAt],
+  );
+
+  const canRetryPayment = useMemo(
+    () =>
+      order?.status === "WAITING_PAYMENT" &&
+      paymentWindowOpen &&
+      (!payment ||
+        payment.status === "REJECTED" ||
+        (payment.status === "PENDING" && isPixExpired)),
+    [order?.status, paymentWindowOpen, payment, isPixExpired],
+  );
+
   const showMethodSelection = useMemo(
     () =>
-      !payment ||
-      payment.status === "REJECTED" ||
-      (payment.status === "PENDING" && payment.paymentMethod === "PIX"),
-    [payment],
+      canRetryPayment &&
+      !(
+        payment?.status === "PENDING" &&
+        payment.paymentMethod === "PIX" &&
+        !isPixExpired
+      ),
+    [canRetryPayment, payment, isPixExpired],
   );
 
   const canShowCardForm = useMemo(
+    () => method === "CREDIT_CARD" && canRetryPayment,
+    [method, canRetryPayment],
+  );
+
+  const showActivePix = useMemo(
     () =>
-      method === "CREDIT_CARD" &&
-      (!payment ||
-        payment.status === "REJECTED" ||
-        (payment.status === "PENDING" && payment.paymentMethod === "PIX")),
-    [method, payment],
+      payment?.paymentMethod === "PIX" &&
+      payment.status === "PENDING" &&
+      Boolean(payment.pix) &&
+      !isPixExpired,
+    [payment, isPixExpired],
   );
 
   const loadInitialData = useCallback(async () => {
@@ -119,8 +156,10 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
 
       setOrder(orderData);
       setConfig(configData);
+      rememberPendingPaymentOrder(orderNumber);
 
       if (orderData.status === "PAID") {
+        clearPendingPaymentOrder(orderNumber);
         router.replace(
           `/pedido/sucesso?pedido=${encodeURIComponent(orderNumber)}`,
         );
@@ -162,6 +201,7 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
         setPayment(updated);
 
         if (updated.status === "APPROVED") {
+          clearPendingPaymentOrder(orderNumber);
           router.push(
             `/pedido/sucesso?pedido=${encodeURIComponent(orderNumber)}`,
           );
@@ -173,6 +213,29 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
 
     return () => clearInterval(interval);
   }, [payment, orderNumber, router]);
+
+  useEffect(() => {
+    if (!order?.paymentExpiresAt || order.status !== "WAITING_PAYMENT") {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      if (new Date(order.paymentExpiresAt).getTime() > Date.now()) {
+        return;
+      }
+
+      try {
+        const refreshed = await fetchOrder(orderNumber);
+        setOrder(refreshed);
+        setPayment(null);
+        clearPendingPaymentOrder(orderNumber);
+      } catch {
+        // Ignora falhas temporárias
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [order, orderNumber]);
 
   useEffect(() => {
     if (
@@ -254,6 +317,7 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
                   setPayment(created);
 
                   if (created.status === "APPROVED") {
+                    clearPendingPaymentOrder(orderNumber);
                     router.push(
                       `/pedido/sucesso?pedido=${encodeURIComponent(orderNumber)}`,
                     );
@@ -326,6 +390,7 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
       setPayment(updated);
 
       if (updated.status === "APPROVED") {
+        clearPendingPaymentOrder(orderNumber);
         router.push(
           `/pedido/sucesso?pedido=${encodeURIComponent(orderNumber)}`,
         );
@@ -384,8 +449,9 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
           <p className="font-display text-2xl text-red-800">
             Pedido cancelado
           </p>
-          <p className="mt-3 text-sm text-red-700">
-            Este pedido foi cancelado e não aceita novos pagamentos.
+          <p className="mt-2 text-sm text-red-700">
+            O prazo de 10 minutos para pagamento expirou e o pedido foi
+            cancelado. O estoque foi liberado novamente.
           </p>
           <Button href="/" className="mt-6">
             Voltar à loja
@@ -415,6 +481,18 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
           </h1>
           <p className="mt-2 text-sm text-yora-muted">
             Pedido {order.orderNumber}
+          </p>
+          {order.status === "WAITING_PAYMENT" && order.paymentExpiresAt && (
+            <div className="mt-4">
+              <PaymentCountdown
+                expiresAt={order.paymentExpiresAt}
+                label="Tempo restante para pagar"
+              />
+            </div>
+          )}
+          <p className="mt-3 text-xs text-yora-muted">
+            Você pode sair desta página e retornar pelo mesmo link ou pelo
+            número do pedido em Minha Conta.
           </p>
         </div>
 
@@ -479,25 +557,27 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
           </div>
         )}
 
-        {method === "PIX" && !payment && (
+        {method === "PIX" && canRetryPayment && (
           <div className="space-y-4">
             <p className="text-sm text-yora-muted">
               Gere o QR Code PIX para concluir o pagamento. O código expira em
-              30 minutos.
+              10 minutos.
             </p>
             <Button
               type="button"
               onClick={handleCreatePixPayment}
               disabled={submitting}
             >
-              {submitting ? "Gerando PIX..." : "Gerar PIX"}
+              {submitting
+                ? "Gerando PIX..."
+                : payment
+                  ? "Gerar novo PIX"
+                  : "Gerar PIX"}
             </Button>
           </div>
         )}
 
-        {payment?.paymentMethod === "PIX" &&
-          payment.status === "PENDING" &&
-          payment.pix && (
+        {showActivePix && payment?.pix && (
           <div className="space-y-6 border border-yora-charcoal/10 bg-yora-cream p-6">
             {payment.pix.qrCodeBase64 ? (
               <div className="flex justify-center">
@@ -527,7 +607,10 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
             </div>
 
             {payment.pix.expiresAt && (
-              <PixCountdown expiresAt={payment.pix.expiresAt} />
+              <PaymentCountdown
+                expiresAt={payment.pix.expiresAt}
+                label="PIX expira em"
+              />
             )}
 
             <p className="text-sm text-yora-muted">
@@ -588,6 +671,7 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
                   });
                   setPayment(created);
                   if (created.status === "APPROVED") {
+                    clearPendingPaymentOrder(orderNumber);
                     router.push(
                       `/pedido/sucesso?pedido=${encodeURIComponent(orderNumber)}`,
                     );

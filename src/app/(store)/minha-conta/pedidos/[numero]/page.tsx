@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { fetchCustomerOrder } from "@/lib/api/me";
 import { getOrderStatusColor, getOrderStatusLabel } from "@/lib/order-status";
 import { formatPrice } from "@/lib/utils";
@@ -71,6 +72,14 @@ export default function AccountOrderDetailPage() {
         <p className={`text-lg ${getOrderStatusColor(order.status)}`}>
           {getOrderStatusLabel(order.status)}
         </p>
+        {order.status === "WAITING_PAYMENT" && (
+          <Button
+            href={`/pagamento/${encodeURIComponent(order.orderNumber)}`}
+            size="sm"
+          >
+            Continuar pagamento
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
