@@ -1,19 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { OrdersKanbanBoard } from "@/components/admin/orders/OrdersKanbanBoard";
+import { OrdersListTable } from "@/components/admin/orders/OrdersListTable";
+import {
+  OrdersViewToggle,
+  type OrdersViewMode,
+} from "@/components/admin/orders/OrdersViewToggle";
 import {
   fetchAdminOrders,
   fetchAdminOrdersDashboard,
+  updateAdminOrderStatus,
 } from "@/lib/api/admin";
 import {
   ORDER_SORT_OPTIONS,
   ORDER_STATUS_LABELS,
   SHIPPING_METHOD_OPTIONS,
-  getOrderStatusColor,
-  getOrderStatusLabel,
 } from "@/lib/order-status";
 import { formatPrice } from "@/lib/utils";
 import type {
@@ -26,15 +29,8 @@ import type {
 const inputClassName =
   "w-full border border-yora-charcoal/15 bg-white px-3 py-2 text-sm outline-none focus:border-yora-charcoal";
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
+const KANBAN_LIMIT = 100;
+const VIEW_MODE_STORAGE_KEY = "yora-admin-orders-view";
 
 const initialFilters: AdminOrdersQuery = {
   search: "",
@@ -49,13 +45,23 @@ const initialFilters: AdminOrdersQuery = {
   limit: 20,
 };
 
+function readStoredViewMode(): OrdersViewMode {
+  if (typeof window === "undefined") return "list";
+
+  const stored = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+  return stored === "kanban" ? "kanban" : "list";
+}
+
 export default function AdminOrdersPage() {
+  const [viewMode, setViewMode] = useState<OrdersViewMode>("list");
   const [filters, setFilters] = useState<AdminOrdersQuery>(initialFilters);
   const [appliedFilters, setAppliedFilters] =
     useState<AdminOrdersQuery>(initialFilters);
   const [orders, setOrders] = useState<AdminOrderListItem[]>([]);
   const [dashboard, setDashboard] = useState<AdminOrdersDashboard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [meta, setMeta] = useState({
     page: 1,
     limit: 20,
@@ -63,24 +69,46 @@ export default function AdminOrdersPage() {
     totalPages: 1,
   });
 
-  const loadData = useCallback(async (query: AdminOrdersQuery) => {
-    setLoading(true);
-    try {
-      const [dashboardData, ordersData] = await Promise.all([
-        fetchAdminOrdersDashboard(),
-        fetchAdminOrders(query),
-      ]);
-      setDashboard(dashboardData);
-      setOrders(ordersData.data);
-      setMeta(ordersData.meta);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    setViewMode(readStoredViewMode());
   }, []);
 
+  function handleViewModeChange(mode: OrdersViewMode) {
+    setViewMode(mode);
+    window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    setAppliedFilters((current) => ({ ...current, page: 1 }));
+  }
+
+  const loadData = useCallback(
+    async (query: AdminOrdersQuery, mode: OrdersViewMode) => {
+      setLoading(true);
+      setActionError(null);
+
+      const listQuery: AdminOrdersQuery = {
+        ...query,
+        page: mode === "kanban" ? 1 : query.page,
+        limit: mode === "kanban" ? KANBAN_LIMIT : query.limit,
+        status: mode === "kanban" ? undefined : query.status,
+      };
+
+      try {
+        const [dashboardData, ordersData] = await Promise.all([
+          fetchAdminOrdersDashboard(),
+          fetchAdminOrders(listQuery),
+        ]);
+        setDashboard(dashboardData);
+        setOrders(ordersData.data);
+        setMeta(ordersData.meta);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
-    loadData(appliedFilters);
-  }, [appliedFilters, loadData]);
+    loadData(appliedFilters, viewMode);
+  }, [appliedFilters, viewMode, loadData]);
 
   function handleFilterSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -97,13 +125,34 @@ export default function AdminOrdersPage() {
     setFilters((current) => ({ ...current, page: nextPage }));
   }
 
+  async function handleOrderMove(orderId: string, newStatus: OrderStatusValue) {
+    setUpdatingOrderId(orderId);
+    setActionError(null);
+
+    try {
+      await updateAdminOrderStatus(orderId, newStatus);
+      await loadData(appliedFilters, viewMode);
+    } catch (err) {
+      setActionError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível atualizar o status do pedido.",
+      );
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  }
+
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-display text-3xl text-yora-charcoal">Pedidos</h1>
-        <p className="mt-1 text-sm text-yora-muted">
-          Acompanhe e gerencie o ciclo de vida das compras.
-        </p>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl text-yora-charcoal">Pedidos</h1>
+          <p className="mt-1 text-sm text-yora-muted">
+            Acompanhe e gerencie o ciclo de vida das compras.
+          </p>
+        </div>
+        <OrdersViewToggle value={viewMode} onChange={handleViewModeChange} />
       </div>
 
       {dashboard && (
@@ -151,28 +200,30 @@ export default function AdminOrdersPage() {
             }
           />
         </div>
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Status
-          </label>
-          <select
-            className={inputClassName}
-            value={filters.status ?? ""}
-            onChange={(e) =>
-              setFilters((current) => ({
-                ...current,
-                status: (e.target.value || undefined) as OrderStatusValue,
-              }))
-            }
-          >
-            <option value="">Todos</option>
-            {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {viewMode === "list" && (
+          <div>
+            <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
+              Status
+            </label>
+            <select
+              className={inputClassName}
+              value={filters.status ?? ""}
+              onChange={(e) =>
+                setFilters((current) => ({
+                  ...current,
+                  status: (e.target.value || undefined) as OrderStatusValue,
+                }))
+              }
+            >
+              <option value="">Todos</option>
+              {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div>
           <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
             Entrega
@@ -291,6 +342,19 @@ export default function AdminOrdersPage() {
         </div>
       </form>
 
+      {viewMode === "kanban" && (
+        <p className="mb-4 text-sm text-yora-muted">
+          Arraste os cards entre as colunas para atualizar o status. Exibindo até{" "}
+          {KANBAN_LIMIT} pedidos mais recentes.
+        </p>
+      )}
+
+      {actionError && (
+        <p className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {actionError}
+        </p>
+      )}
+
       {loading ? (
         <p className="text-sm text-yora-muted">Carregando pedidos...</p>
       ) : orders.length === 0 ? (
@@ -299,56 +363,23 @@ export default function AdminOrdersPage() {
             Nenhum pedido encontrado com os filtros atuais.
           </p>
         </div>
+      ) : viewMode === "kanban" ? (
+        <>
+          <OrdersKanbanBoard
+            orders={orders}
+            updatingOrderId={updatingOrderId}
+            onOrderMove={handleOrderMove}
+          />
+          {meta.total > KANBAN_LIMIT && (
+            <p className="mt-4 text-sm text-yora-muted">
+              Mostrando {orders.length} de {meta.total} pedidos. Use a
+              visualização em lista para ver todos com paginação.
+            </p>
+          )}
+        </>
       ) : (
         <>
-          <div className="overflow-x-auto border border-yora-charcoal/10 bg-yora-cream">
-            <table className="w-full min-w-[980px] text-left text-sm">
-              <thead className="border-b border-yora-charcoal/10 bg-yora-sand/50">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Nº Pedido</th>
-                  <th className="px-4 py-3 font-medium">Cliente</th>
-                  <th className="px-4 py-3 font-medium">Data</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Itens</th>
-                  <th className="px-4 py-3 font-medium">Total</th>
-                  <th className="px-4 py-3 font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="border-b border-yora-charcoal/5 last:border-0"
-                  >
-                    <td className="px-4 py-3 font-medium">{order.orderNumber}</td>
-                    <td className="px-4 py-3">
-                      <p>{order.customerName}</p>
-                      <p className="text-yora-muted">{order.customerEmail}</p>
-                    </td>
-                    <td className="px-4 py-3 text-yora-muted">
-                      {formatDateTime(order.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={getOrderStatusColor(order.status)}>
-                        {getOrderStatusLabel(order.status)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">{order.itemCount}</td>
-                    <td className="px-4 py-3">{formatPrice(order.total)}</td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/orders/${order.id}`}
-                        className="inline-flex items-center gap-1 text-yora-charcoal hover:text-yora-taupe"
-                      >
-                        <Eye className="h-4 w-4" />
-                        Ver
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <OrdersListTable orders={orders} />
 
           <div className="mt-4 flex items-center justify-between gap-4 text-sm">
             <p className="text-yora-muted">
