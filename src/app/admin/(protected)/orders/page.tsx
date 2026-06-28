@@ -1,23 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import {
+  countActiveOrderFilters,
+  OrdersFiltersModal,
+} from "@/components/admin/orders/OrdersFiltersModal";
 import { OrdersKanbanBoard } from "@/components/admin/orders/OrdersKanbanBoard";
 import { OrdersListTable } from "@/components/admin/orders/OrdersListTable";
 import {
   OrdersViewToggle,
   type OrdersViewMode,
 } from "@/components/admin/orders/OrdersViewToggle";
+import { useAdminOrdersSync } from "@/hooks/use-admin-orders-sync";
 import {
   fetchAdminOrders,
   fetchAdminOrdersDashboard,
   updateAdminOrderStatus,
 } from "@/lib/api/admin";
-import {
-  ORDER_SORT_OPTIONS,
-  ORDER_STATUS_LABELS,
-  SHIPPING_METHOD_OPTIONS,
-} from "@/lib/order-status";
 import { formatPrice } from "@/lib/utils";
 import type {
   AdminOrderListItem,
@@ -25,9 +26,6 @@ import type {
   AdminOrdersQuery,
   OrderStatusValue,
 } from "@/types";
-
-const inputClassName =
-  "w-full border border-yora-charcoal/15 bg-white px-3 py-2 text-sm outline-none focus:border-yora-charcoal";
 
 const KANBAN_LIMIT = 100;
 const VIEW_MODE_STORAGE_KEY = "yora-admin-orders-view";
@@ -52,6 +50,14 @@ function readStoredViewMode(): OrdersViewMode {
   return stored === "kanban" ? "kanban" : "list";
 }
 
+function formatSyncTime(value: Date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(value);
+}
+
 export default function AdminOrdersPage() {
   const [viewMode, setViewMode] = useState<OrdersViewMode>("list");
   const [filters, setFilters] = useState<AdminOrdersQuery>(initialFilters);
@@ -61,13 +67,20 @@ export default function AdminOrdersPage() {
   const [dashboard, setDashboard] = useState<AdminOrdersDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [isDraggingKanban, setIsDraggingKanban] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [filtersModalOpen, setFiltersModalOpen] = useState(false);
   const [meta, setMeta] = useState({
     page: 1,
     limit: 20,
     total: 0,
     totalPages: 1,
   });
+
+  const appliedFiltersRef = useRef(appliedFilters);
+  const viewModeRef = useRef(viewMode);
+  appliedFiltersRef.current = appliedFilters;
+  viewModeRef.current = viewMode;
 
   useEffect(() => {
     setViewMode(readStoredViewMode());
@@ -80,8 +93,14 @@ export default function AdminOrdersPage() {
   }
 
   const loadData = useCallback(
-    async (query: AdminOrdersQuery, mode: OrdersViewMode) => {
-      setLoading(true);
+    async (
+      query: AdminOrdersQuery,
+      mode: OrdersViewMode,
+      options?: { silent?: boolean },
+    ) => {
+      if (!options?.silent) {
+        setLoading(true);
+      }
       setActionError(null);
 
       const listQuery: AdminOrdersQuery = {
@@ -100,25 +119,46 @@ export default function AdminOrdersPage() {
         setOrders(ordersData.data);
         setMeta(ordersData.meta);
       } finally {
-        setLoading(false);
+        if (!options?.silent) {
+          setLoading(false);
+        }
       }
     },
     [],
   );
 
+  const silentSync = useCallback(async () => {
+    await loadData(appliedFiltersRef.current, viewModeRef.current, {
+      silent: true,
+    });
+  }, [loadData]);
+
+  const { lastSyncedAt, syncing } = useAdminOrdersSync({
+    onSync: silentSync,
+    isPaused: () => Boolean(updatingOrderId) || isDraggingKanban,
+  });
+
   useEffect(() => {
     loadData(appliedFilters, viewMode);
   }, [appliedFilters, viewMode, loadData]);
 
-  function handleFilterSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  function handleFilterSubmit() {
     setAppliedFilters({ ...filters, page: 1 });
+    setFiltersModalOpen(false);
   }
 
   function handleClearFilters() {
     setFilters(initialFilters);
     setAppliedFilters(initialFilters);
+    setFiltersModalOpen(false);
   }
+
+  function openFiltersModal() {
+    setFilters(appliedFilters);
+    setFiltersModalOpen(true);
+  }
+
+  const activeFilterCount = countActiveOrderFilters(appliedFilters, viewMode);
 
   function handlePageChange(nextPage: number) {
     setAppliedFilters((current) => ({ ...current, page: nextPage }));
@@ -126,13 +166,21 @@ export default function AdminOrdersPage() {
   }
 
   async function handleOrderMove(orderId: string, newStatus: OrderStatusValue) {
+    const previousOrders = orders;
     setUpdatingOrderId(orderId);
     setActionError(null);
 
+    setOrders((current) =>
+      current.map((order) =>
+        order.id === orderId ? { ...order, status: newStatus } : order,
+      ),
+    );
+
     try {
       await updateAdminOrderStatus(orderId, newStatus);
-      await loadData(appliedFilters, viewMode);
+      await loadData(appliedFilters, viewMode, { silent: true });
     } catch (err) {
+      setOrders(previousOrders);
       setActionError(
         err instanceof Error
           ? err.message
@@ -147,12 +195,43 @@ export default function AdminOrdersPage() {
     <div>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl text-yora-charcoal">Pedidos</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-display text-3xl text-yora-charcoal">Pedidos</h1>
+            <span className="inline-flex items-center gap-2 rounded-full border border-yora-charcoal/10 bg-yora-cream px-3 py-1 text-xs text-yora-muted">
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  syncing ? "animate-pulse bg-amber-500" : "bg-green-500"
+                }`}
+              />
+              {syncing
+                ? "Atualizando..."
+                : lastSyncedAt
+                  ? `Ao vivo · ${formatSyncTime(lastSyncedAt)}`
+                  : "Ao vivo"}
+            </span>
+          </div>
           <p className="mt-1 text-sm text-yora-muted">
-            Acompanhe e gerencie o ciclo de vida das compras.
+            Acompanhe e gerencie o ciclo de vida das compras em tempo real.
           </p>
         </div>
-        <OrdersViewToggle value={viewMode} onChange={handleViewModeChange} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={openFiltersModal}
+            className="inline-flex items-center gap-2"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filtros
+            {activeFilterCount > 0 && (
+              <span className="rounded-full bg-yora-charcoal px-2 py-0.5 text-xs text-yora-cream">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+          <OrdersViewToggle value={viewMode} onChange={handleViewModeChange} />
+        </div>
       </div>
 
       {dashboard && (
@@ -183,169 +262,20 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
-      <form
-        onSubmit={handleFilterSubmit}
-        className="mb-6 grid gap-4 border border-yora-charcoal/10 bg-yora-cream p-4 md:grid-cols-2 xl:grid-cols-4"
-      >
-        <div className="xl:col-span-2">
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Buscar
-          </label>
-          <input
-            className={inputClassName}
-            placeholder="Nº pedido, nome ou e-mail"
-            value={filters.search ?? ""}
-            onChange={(e) =>
-              setFilters((current) => ({ ...current, search: e.target.value }))
-            }
-          />
-        </div>
-        {viewMode === "list" && (
-          <div>
-            <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-              Status
-            </label>
-            <select
-              className={inputClassName}
-              value={filters.status ?? ""}
-              onChange={(e) =>
-                setFilters((current) => ({
-                  ...current,
-                  status: (e.target.value || undefined) as OrderStatusValue,
-                }))
-              }
-            >
-              <option value="">Todos</option>
-              {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Entrega
-          </label>
-          <select
-            className={inputClassName}
-            value={filters.shippingMethod ?? ""}
-            onChange={(e) =>
-              setFilters((current) => ({
-                ...current,
-                shippingMethod: (e.target.value || undefined) as
-                  | "pac"
-                  | "sedex"
-                  | "pickup"
-                  | undefined,
-              }))
-            }
-          >
-            <option value="">Todas</option>
-            {SHIPPING_METHOD_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Data inicial
-          </label>
-          <input
-            type="date"
-            className={inputClassName}
-            value={filters.dateFrom ?? ""}
-            onChange={(e) =>
-              setFilters((current) => ({ ...current, dateFrom: e.target.value }))
-            }
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Data final
-          </label>
-          <input
-            type="date"
-            className={inputClassName}
-            value={filters.dateTo ?? ""}
-            onChange={(e) =>
-              setFilters((current) => ({ ...current, dateTo: e.target.value }))
-            }
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Valor mínimo
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            className={inputClassName}
-            value={filters.minTotal ?? ""}
-            onChange={(e) =>
-              setFilters((current) => ({ ...current, minTotal: e.target.value }))
-            }
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Valor máximo
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            className={inputClassName}
-            value={filters.maxTotal ?? ""}
-            onChange={(e) =>
-              setFilters((current) => ({ ...current, maxTotal: e.target.value }))
-            }
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
-            Ordenação
-          </label>
-          <select
-            className={inputClassName}
-            value={filters.sort ?? "newest"}
-            onChange={(e) =>
-              setFilters((current) => ({
-                ...current,
-                sort: e.target.value as AdminOrdersQuery["sort"],
-              }))
-            }
-          >
-            {ORDER_SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-end gap-2 xl:col-span-4">
-          <Button type="submit" size="sm">
-            Aplicar filtros
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleClearFilters}
-          >
-            Limpar
-          </Button>
-        </div>
-      </form>
+      <OrdersFiltersModal
+        open={filtersModalOpen}
+        viewMode={viewMode}
+        filters={filters}
+        onClose={() => setFiltersModalOpen(false)}
+        onChange={setFilters}
+        onApply={handleFilterSubmit}
+        onClear={handleClearFilters}
+      />
 
       {viewMode === "kanban" && (
         <p className="mb-4 text-sm text-yora-muted">
-          Arraste os cards entre as colunas para atualizar o status. Exibindo até{" "}
-          {KANBAN_LIMIT} pedidos mais recentes.
+          Arraste os cards entre colunas para alterar o status no servidor. Clique
+          em um card para abrir o pedido.
         </p>
       )}
 
@@ -369,6 +299,7 @@ export default function AdminOrdersPage() {
             orders={orders}
             updatingOrderId={updatingOrderId}
             onOrderMove={handleOrderMove}
+            onDraggingChange={setIsDraggingKanban}
           />
           {meta.total > KANBAN_LIMIT && (
             <p className="mt-4 text-sm text-yora-muted">

@@ -9,18 +9,20 @@ import {
 } from "@/lib/order-status";
 import { cn } from "@/lib/utils";
 import type { AdminOrderListItem, OrderStatusValue } from "@/types";
-import { OrderKanbanCard } from "./OrdersListTable";
+import { OrderKanbanCard } from "./OrderKanbanCard";
 
 interface OrdersKanbanBoardProps {
   orders: AdminOrderListItem[];
   updatingOrderId: string | null;
   onOrderMove: (orderId: string, newStatus: OrderStatusValue) => Promise<void>;
+  onDraggingChange?: (dragging: boolean) => void;
 }
 
 export function OrdersKanbanBoard({
   orders,
   updatingOrderId,
   onOrderMove,
+  onDraggingChange,
 }: OrdersKanbanBoardProps) {
   const [draggedOrderId, setDraggedOrderId] = useState<string | null>(null);
   const [dropTargetStatus, setDropTargetStatus] =
@@ -120,10 +122,14 @@ export function OrdersKanbanBoard({
                       order={order}
                       isDragging={draggedOrderId === order.id}
                       isUpdating={updatingOrderId === order.id}
-                      onDragStart={setDraggedOrderId}
+                      onDragStart={(orderId) => {
+                        setDraggedOrderId(orderId);
+                        onDraggingChange?.(true);
+                      }}
                       onDragEnd={() => {
                         setDraggedOrderId(null);
                         setDropTargetStatus(null);
+                        onDraggingChange?.(false);
                       }}
                     />
                   ))

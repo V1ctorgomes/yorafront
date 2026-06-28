@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Eye } from "lucide-react";
 import { getOrderStatusColor, getOrderStatusLabel } from "@/lib/order-status";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import type { AdminOrderListItem } from "@/types";
 
 function formatDateTime(value: string) {
@@ -68,61 +68,5 @@ export function OrdersListTable({ orders }: OrdersListTableProps) {
         </tbody>
       </table>
     </div>
-  );
-}
-
-interface OrderKanbanCardProps {
-  order: AdminOrderListItem;
-  isDragging?: boolean;
-  isUpdating?: boolean;
-  onDragStart: (orderId: string) => void;
-  onDragEnd: () => void;
-}
-
-export function OrderKanbanCard({
-  order,
-  isDragging,
-  isUpdating,
-  onDragStart,
-  onDragEnd,
-}: OrderKanbanCardProps) {
-  return (
-    <article
-      draggable={!isUpdating}
-      onDragStart={() => onDragStart(order.id)}
-      onDragEnd={onDragEnd}
-      className={cn(
-        "cursor-grab border border-yora-charcoal/10 bg-white p-3 shadow-sm transition-opacity active:cursor-grabbing",
-        isDragging && "opacity-40",
-        isUpdating && "cursor-wait opacity-60",
-      )}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-yora-charcoal">
-          {order.orderNumber}
-        </p>
-        <Link
-          href={`/admin/orders/${order.id}`}
-          className="shrink-0 text-yora-muted hover:text-yora-charcoal"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <Eye className="h-4 w-4" />
-        </Link>
-      </div>
-      <p className="mt-2 truncate text-sm">{order.customerName}</p>
-      <p className="truncate text-xs text-yora-muted">{order.customerEmail}</p>
-      <div className="mt-3 flex items-center justify-between gap-2 text-xs text-yora-muted">
-        <span>{order.itemCount} item{order.itemCount !== 1 ? "s" : ""}</span>
-        <span className="font-medium text-yora-charcoal">
-          {formatPrice(order.total)}
-        </span>
-      </div>
-      <p className="mt-2 text-xs text-yora-muted">
-        {formatDateTime(order.createdAt)}
-      </p>
-      {isUpdating && (
-        <p className="mt-2 text-xs text-yora-muted">Atualizando...</p>
-      )}
-    </article>
   );
 }
