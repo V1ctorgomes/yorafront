@@ -2,72 +2,137 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { useState } from "react";
+import {
+  CreditCard,
+  Image,
+  Layers,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Package,
+  Shapes,
+  ShoppingBag,
+  Truck,
+  X,
+} from "lucide-react";
 import { clearAuthToken } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "Dashboard", href: "/admin/dashboard" },
-  { label: "Pedidos", href: "/admin/orders" },
-  { label: "Transportadoras", href: "/admin/shipping" },
-  { label: "Pagamentos", href: "/admin/payments" },
-  { label: "Banners", href: "/admin/banners" },
-  { label: "Categorias", href: "/admin/categories" },
-  { label: "Coleções", href: "/admin/collections" },
-  { label: "Produtos", href: "/admin/products" },
+  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Pedidos", href: "/admin/orders", icon: ShoppingBag },
+  { label: "Transportadoras", href: "/admin/shipping", icon: Truck },
+  { label: "Pagamentos", href: "/admin/payments", icon: CreditCard },
+  { label: "Banners", href: "/admin/banners", icon: Image },
+  { label: "Categorias", href: "/admin/categories", icon: Shapes },
+  { label: "Coleções", href: "/admin/collections", icon: Layers },
+  { label: "Produtos", href: "/admin/products", icon: Package },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   function handleLogout() {
     clearAuthToken();
     router.push("/admin/login");
   }
 
+  function closeSidebar() {
+    setSidebarOpen(false);
+  }
+
   return (
     <div className="min-h-screen bg-yora-sand">
-      <header className="border-b border-yora-charcoal/10 bg-yora-charcoal text-yora-cream">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Fechar menu"
+          className="fixed inset-0 z-40 bg-yora-charcoal/40 md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-yora-charcoal/10 bg-yora-charcoal text-yora-cream transition-transform duration-200 md:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex items-center justify-between border-b border-yora-cream/10 px-5 py-5">
           <div>
             <p className="font-display text-xl tracking-[0.25em]">YORA</p>
-            <p className="text-xs tracking-widest text-yora-cream/60 uppercase">
-              Painel administrativo
+            <p className="mt-1 text-[10px] tracking-widest text-yora-cream/50 uppercase">
+              Administração
             </p>
           </div>
           <button
             type="button"
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-yora-cream/80 transition-colors hover:text-yora-cream"
+            aria-label="Fechar menu"
+            className="text-yora-cream/70 hover:text-yora-cream md:hidden"
+            onClick={closeSidebar}
           >
-            <LogOut className="h-4 w-4" />
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+              const Icon = item.icon;
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={closeSidebar}
+                    className={cn(
+                      "flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm transition-colors",
+                      isActive
+                        ? "bg-yora-cream text-yora-charcoal"
+                        : "text-yora-cream/75 hover:bg-yora-cream/10 hover:text-yora-cream",
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="border-t border-yora-cream/10 p-3">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-sm text-yora-cream/75 transition-colors hover:bg-yora-cream/10 hover:text-yora-cream"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
             Sair
           </button>
         </div>
-      </header>
+      </aside>
 
-      <div className="mx-auto flex max-w-6xl gap-8 px-4 py-8 md:px-6">
-        <aside className="hidden w-48 shrink-0 md:block">
-          <nav className="space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "block px-3 py-2 text-sm tracking-wide transition-colors",
-                  pathname.startsWith(item.href)
-                    ? "bg-yora-charcoal text-yora-cream"
-                    : "text-yora-muted hover:text-yora-charcoal",
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </aside>
+      <div className="flex min-h-screen flex-col md:pl-64">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-yora-charcoal/10 bg-yora-cream px-4 py-3 md:hidden">
+          <button
+            type="button"
+            aria-label="Abrir menu"
+            className="text-yora-charcoal"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <p className="font-display text-lg tracking-[0.2em] text-yora-charcoal">
+            YORA
+          </p>
+        </header>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
       </div>
     </div>
   );
