@@ -3,7 +3,7 @@
 import Script from "next/script";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { CheckoutApiError, fetchOrder } from "@/lib/api/checkout";
 import {
@@ -21,21 +21,18 @@ import {
 import { cn, formatPrice } from "@/lib/utils";
 import type { Order, Payment, PaymentConfig, PaymentMethodType } from "@/types";
 
-const inputClassName =
-  "w-full border border-yora-charcoal/15 bg-white px-3 py-2 text-sm outline-none focus:border-yora-charcoal";
-
 declare global {
   interface Window {
     MercadoPago?: new (publicKey: string, options?: { locale: string }) => {
-      cardForm: (options: Record<string, unknown>) => {
-        getCardFormData: () => {
-          token: string;
-          paymentMethodId: string;
-          issuerId: string;
-          installments: string;
-        };
+      bricks: () => {
+        create: (
+          brickType: string,
+          containerId: string,
+          settings: Record<string, unknown>,
+        ) => Promise<{ unmount: () => void }>;
       };
     };
+    cardPaymentBrickController?: { unmount: () => void };
   }
 }
 
@@ -82,9 +79,7 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
-  const cardFormRef = useRef<ReturnType<
-    NonNullable<Window["MercadoPago"]>["prototype"]["cardForm"]
-  > | null>(null);
+  const [cardFormReady, setCardFormReady] = useState(false);
 
   const publicKey =
     config?.publicKey ||
@@ -94,6 +89,23 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
   const canSimulate =
     config !== null &&
     (!config.enabled || config.environment === "sandbox");
+
+  const showMethodSelection = useMemo(
+    () =>
+      !payment ||
+      payment.status === "REJECTED" ||
+      (payment.status === "PENDING" && payment.paymentMethod === "PIX"),
+    [payment],
+  );
+
+  const canShowCardForm = useMemo(
+    () =>
+      method === "CREDIT_CARD" &&
+      (!payment ||
+        payment.status === "REJECTED" ||
+        (payment.status === "PENDING" && payment.paymentMethod === "PIX")),
+    [method, payment],
+  );
 
   const loadInitialData = useCallback(async () => {
     setLoading(true);
@@ -168,106 +180,118 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
       !sdkReady ||
       !publicKey ||
       !order ||
-      payment
+      !canShowCardForm
     ) {
+      setCardFormReady(false);
       return;
     }
 
-    if (!window.MercadoPago) {
-      return;
+    let cancelled = false;
+
+    async function mountCardBrick() {
+      if (!window.MercadoPago) {
+        return;
+      }
+
+      const container = document.getElementById("cardPaymentBrick_container");
+      if (!container) {
+        return;
+      }
+
+      window.cardPaymentBrickController?.unmount();
+      window.cardPaymentBrickController = undefined;
+
+      const mp = new window.MercadoPago(publicKey, { locale: "pt-BR" });
+      const bricksBuilder = mp.bricks();
+
+      try {
+        window.cardPaymentBrickController = await bricksBuilder.create(
+          "cardPayment",
+          "cardPaymentBrick_container",
+          {
+            initialization: {
+              amount: Number(order.total.toFixed(2)),
+              payer: {
+                email: order.customer.email,
+              },
+            },
+            callbacks: {
+              onReady: () => {
+                if (!cancelled) {
+                  setCardFormReady(true);
+                  setError(null);
+                }
+              },
+              onError: (brickError: { message?: string }) => {
+                if (!cancelled) {
+                  setCardFormReady(false);
+                  setError(
+                    brickError.message ||
+                      "Não foi possível carregar o formulário de cartão.",
+                  );
+                }
+              },
+              onSubmit: async (cardFormData: {
+                token: string;
+                payment_method_id: string;
+                issuer_id?: string;
+                installments?: number;
+              }) => {
+                setSubmitting(true);
+                setError(null);
+
+                try {
+                  const created = await createPayment({
+                    orderNumber,
+                    paymentMethod: "CREDIT_CARD",
+                    token: cardFormData.token,
+                    paymentMethodId: cardFormData.payment_method_id,
+                    installments: cardFormData.installments ?? 1,
+                    issuerId: cardFormData.issuer_id,
+                  });
+
+                  setPayment(created);
+
+                  if (created.status === "APPROVED") {
+                    router.push(
+                      `/pedido/sucesso?pedido=${encodeURIComponent(orderNumber)}`,
+                    );
+                  }
+                } catch (err) {
+                  const message =
+                    err instanceof PaymentsApiError
+                      ? err.message
+                      : "Não foi possível processar o cartão.";
+                  setError(message);
+                  throw err;
+                } finally {
+                  setSubmitting(false);
+                }
+              },
+            },
+          },
+        );
+      } catch {
+        if (!cancelled) {
+          setCardFormReady(false);
+          setError("Não foi possível carregar o formulário de cartão.");
+        }
+      }
     }
 
-    const mp = new window.MercadoPago(publicKey, { locale: "pt-BR" });
-    cardFormRef.current = mp.cardForm({
-      amount: String(order.total),
-      iframe: true,
-      form: {
-        id: "payment-card-form",
-        cardNumber: {
-          id: "form-checkout__cardNumber",
-          placeholder: "Número do cartão",
-        },
-        expirationDate: {
-          id: "form-checkout__expirationDate",
-          placeholder: "MM/AA",
-        },
-        securityCode: {
-          id: "form-checkout__securityCode",
-          placeholder: "CVV",
-        },
-        cardholderName: {
-          id: "form-checkout__cardholderName",
-          placeholder: "Nome no cartão",
-        },
-        issuer: {
-          id: "form-checkout__issuer",
-          placeholder: "Banco emissor",
-        },
-        installments: {
-          id: "form-checkout__installments",
-          placeholder: "Parcelas",
-        },
-        identificationType: {
-          id: "form-checkout__identificationType",
-          placeholder: "Tipo de documento",
-        },
-        identificationNumber: {
-          id: "form-checkout__identificationNumber",
-          placeholder: "Número do documento",
-        },
-        cardholderEmail: {
-          id: "form-checkout__cardholderEmail",
-          placeholder: "E-mail",
-        },
-      },
-      callbacks: {
-        onFormMounted: (mountError: Error | null) => {
-          if (mountError) {
-            setError("Não foi possível carregar o formulário de cartão.");
-          }
-        },
-        onSubmit: async (event: Event) => {
-          event.preventDefault();
-          if (!cardFormRef.current) return;
-
-          setSubmitting(true);
-          setError(null);
-
-          try {
-            const cardData = cardFormRef.current.getCardFormData();
-            const created = await createPayment({
-              orderNumber,
-              paymentMethod: "CREDIT_CARD",
-              token: cardData.token,
-              paymentMethodId: cardData.paymentMethodId,
-              installments: Number(cardData.installments) || 1,
-              issuerId: cardData.issuerId || undefined,
-            });
-
-            setPayment(created);
-
-            if (created.status === "APPROVED") {
-              router.push(
-                `/pedido/sucesso?pedido=${encodeURIComponent(orderNumber)}`,
-              );
-            }
-          } catch (err) {
-            const message =
-              err instanceof PaymentsApiError
-                ? err.message
-                : "Não foi possível processar o cartão.";
-            setError(message);
-          } finally {
-            setSubmitting(false);
-          }
-        },
-      },
-    });
+    setCardFormReady(false);
+    const timer = window.setTimeout(() => {
+      void mountCardBrick();
+    }, 0);
 
     return () => {
-      cardFormRef.current = null;
+      cancelled = true;
+      window.clearTimeout(timer);
+      window.cardPaymentBrickController?.unmount();
+      window.cardPaymentBrickController = undefined;
+      setCardFormReady(false);
     };
-  }, [method, sdkReady, publicKey, order, payment, orderNumber, router]);
+  }, [method, sdkReady, publicKey, order, canShowCardForm, orderNumber, router]);
 
   async function handleCreatePixPayment() {
     setSubmitting(true);
@@ -323,11 +347,6 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
-
-  const showMethodSelection = useMemo(
-    () => !payment || payment.status === "REJECTED",
-    [payment],
-  );
 
   if (loading) {
     return (
@@ -538,34 +557,18 @@ export function PaymentFlow({ orderNumber }: PaymentFlowProps) {
           </div>
         )}
 
-        {method === "CREDIT_CARD" && !payment && publicKey && (
-          <form id="payment-card-form" className="space-y-4">
-            <div id="form-checkout__cardNumber" className={inputClassName} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div id="form-checkout__expirationDate" className={inputClassName} />
-              <div id="form-checkout__securityCode" className={inputClassName} />
-            </div>
-            <div id="form-checkout__cardholderName" className={inputClassName} />
-            <div id="form-checkout__issuer" className={inputClassName} />
-            <div id="form-checkout__installments" className={inputClassName} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div
-                id="form-checkout__identificationType"
-                className={inputClassName}
-              />
-              <div
-                id="form-checkout__identificationNumber"
-                className={inputClassName}
-              />
-            </div>
-            <div id="form-checkout__cardholderEmail" className={inputClassName} />
-            <Button type="submit" disabled={submitting || !sdkReady}>
-              {submitting ? "Processando..." : "Pagar com cartão"}
-            </Button>
-          </form>
+        {canShowCardForm && publicKey && (
+          <div className="space-y-4">
+            {!sdkReady || !cardFormReady ? (
+              <p className="text-sm text-yora-muted">
+                Carregando formulário de cartão...
+              </p>
+            ) : null}
+            <div id="cardPaymentBrick_container" className="min-h-[320px]" />
+          </div>
         )}
 
-        {method === "CREDIT_CARD" && !payment && !publicKey && (
+        {method === "CREDIT_CARD" && !publicKey && (
           <div className="space-y-4">
             <p className="text-sm text-yora-muted">
               Mercado Pago não configurado. Use o modo simulado para testes.
