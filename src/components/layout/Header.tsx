@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
@@ -11,16 +11,51 @@ import { useMounted } from "@/lib/use-mounted";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types";
 
+const MOBILE_MENU_TRANSITION_MS = 380;
+
 interface HeaderProps {
   categories?: Category[];
 }
 
 export function Header({ categories = [] }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileMenuRendered, setMobileMenuRendered] = useState(false);
+  const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
   const { cart, miniCartOpen, setMiniCartOpen } = useCart();
   const mounted = useMounted();
 
-  useBodyScrollLock(mobileOpen);
+  useEffect(() => {
+    if (!mobileOpen) {
+      setMobileMenuVisible(false);
+      const timer = window.setTimeout(() => {
+        setMobileMenuRendered(false);
+      }, MOBILE_MENU_TRANSITION_MS);
+
+      return () => window.clearTimeout(timer);
+    }
+
+    setMobileMenuRendered(true);
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setMobileMenuVisible(true));
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [mobileOpen]);
+
+  useBodyScrollLock(mobileMenuRendered);
+
+  useEffect(() => {
+    if (!mobileMenuRendered) return;
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [mobileMenuRendered]);
 
   const categoryLinks = categories.map((category) => ({
     label: category.name,
@@ -32,6 +67,10 @@ export function Header({ categories = [] }: HeaderProps) {
     ...categoryLinks,
     { label: "Sale", href: "/sale" },
   ];
+
+  function closeMobileMenu() {
+    setMobileOpen(false);
+  }
 
   function openMobileMenu() {
     setMiniCartOpen(false);
@@ -45,27 +84,36 @@ export function Header({ categories = [] }: HeaderProps) {
 
   const mobileMenu =
     mounted &&
-    mobileOpen &&
+    mobileMenuRendered &&
     createPortal(
       <>
         <div
-          className="fixed inset-0 z-[200] bg-yora-charcoal/50 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-          aria-hidden={false}
+          className={cn(
+            "mobile-menu-backdrop fixed inset-0 z-[200] bg-yora-charcoal/50 backdrop-blur-[2px] lg:hidden",
+            mobileMenuVisible
+              ? "mobile-menu-backdrop-open"
+              : "mobile-menu-backdrop-closed",
+          )}
+          onClick={closeMobileMenu}
+          aria-hidden="true"
         />
 
         <aside
-          className="fixed top-0 left-0 z-[201] isolate flex h-dvh w-[min(320px,85vw)] flex-col overflow-hidden bg-yora-cream lg:hidden"
+          className={cn(
+            "mobile-menu-panel fixed top-0 left-0 z-[201] isolate flex h-dvh w-[min(320px,85vw)] flex-col overflow-hidden bg-yora-cream lg:hidden",
+            mobileMenuVisible ? "mobile-menu-panel-open" : "mobile-menu-panel-closed",
+          )}
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
+          onClick={(event) => event.stopPropagation()}
         >
           <div className="relative z-10 shrink-0 border-b border-yora-charcoal/10 bg-yora-cream px-5 py-4">
             <div className="flex items-center justify-between">
               <span className="font-display text-xl tracking-[0.25em]">YORA</span>
               <button
                 type="button"
-                onClick={() => setMobileOpen(false)}
+                onClick={closeMobileMenu}
                 className="p-2"
                 aria-label="Fechar menu"
               >
@@ -79,19 +127,40 @@ export function Header({ categories = [] }: HeaderProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className="animate-page-enter-forward border-b border-yora-charcoal/5 py-4 text-sm tracking-widest uppercase text-yora-charcoal transition-colors hover:text-yora-taupe"
-                style={{ animationDelay: `${index * 50}ms` }}
+                onClick={closeMobileMenu}
+                className={cn(
+                  "border-b border-yora-charcoal/5 py-4 text-sm tracking-widest uppercase text-yora-charcoal transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-yora-taupe",
+                  mobileMenuVisible
+                    ? "translate-x-0 opacity-100"
+                    : "-translate-x-4 opacity-0",
+                )}
+                style={{
+                  transitionDelay: mobileMenuVisible
+                    ? `${120 + index * 45}ms`
+                    : "0ms",
+                }}
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-yora-cream px-5 py-6">
+          <div
+            className={cn(
+              "relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-yora-cream px-5 py-6 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              mobileMenuVisible
+                ? "translate-x-0 opacity-100"
+                : "-translate-x-4 opacity-0",
+            )}
+            style={{
+              transitionDelay: mobileMenuVisible
+                ? `${120 + navItems.length * 45}ms`
+                : "0ms",
+            }}
+          >
             <Link
               href="/minha-conta"
-              onClick={() => setMobileOpen(false)}
+              onClick={closeMobileMenu}
               className="flex items-center gap-3 text-sm tracking-wide text-yora-charcoal"
             >
               <User className="h-4 w-4" />
