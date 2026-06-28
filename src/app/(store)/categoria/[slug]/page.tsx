@@ -18,12 +18,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const products = await fetchProducts({ category: slug });
   const bannerImage = category.bannerImageUrl ?? category.imageUrl;
-  const hasBanner = Boolean(bannerImage);
 
   return (
     <div>
       <section className="relative min-h-[320px] overflow-hidden bg-yora-sand md:min-h-[420px]">
-        {hasBanner && (
+        {bannerImage ? (
           <>
             <Image
               src={bannerImage}
@@ -39,7 +38,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <div className="relative mx-auto flex min-h-[320px] max-w-7xl flex-col justify-end px-4 pb-12 md:min-h-[420px] md:px-6 md:pb-16 lg:px-8">
           <p
             className={
-              hasBanner
+              bannerImage
                 ? "text-xs tracking-[0.35em] text-yora-cream/80 uppercase"
                 : "text-xs tracking-[0.35em] text-yora-taupe uppercase"
             }
@@ -48,7 +47,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </p>
           <h1
             className={
-              hasBanner
+              bannerImage
                 ? "mt-3 font-display text-4xl text-yora-cream md:text-6xl"
                 : "mt-3 font-display text-4xl text-yora-charcoal md:text-6xl"
             }
@@ -58,7 +57,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           {category.description && (
             <p
               className={
-                hasBanner
+                bannerImage
                   ? "mt-4 max-w-2xl text-sm leading-relaxed text-yora-cream/90 md:text-base"
                   : "mt-4 max-w-2xl text-sm leading-relaxed text-yora-muted md:text-base"
               }
