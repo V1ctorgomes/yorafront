@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
+import { storeImages } from "@/lib/seed-images";
 
 export function BrandStory() {
   return (
@@ -7,8 +8,8 @@ export function BrandStory() {
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:px-6 md:py-24 lg:px-8">
         <div className="relative aspect-[4/5] overflow-hidden">
           <Image
-            src="https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&q=80"
-            alt="Mulher vestindo peças Yora"
+            src={storeImages.brandStory}
+            alt="Mulher em roupa fitness Yora"
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
