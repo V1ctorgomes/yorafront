@@ -233,4 +233,37 @@ body {
   .animate-page-enter-backward {
     animation: none !important;
   }
+
+  .mini-cart-backdrop,
+  .mini-cart-panel {
+    transition: none !important;
+  }
+}
+
+.mini-cart-backdrop {
+  transition:
+    opacity 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    backdrop-filter 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mini-cart-backdrop-open {
+  opacity: 1;
+}
+
+.mini-cart-backdrop-closed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mini-cart-panel {
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.mini-cart-panel-open {
+  transform: translateX(0);
+}
+
+.mini-cart-panel-closed {
+  transform: translateX(100%);
 }

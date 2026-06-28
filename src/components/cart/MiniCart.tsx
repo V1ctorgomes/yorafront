@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { CartLineItem } from "@/components/cart/CartLineItem";
@@ -9,7 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { useCart } from "@/features/cart/cart-context";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 import { useMounted } from "@/lib/use-mounted";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
+
+const MINI_CART_TRANSITION_MS = 380;
 
 export function MiniCart() {
   const {
@@ -20,11 +21,31 @@ export function MiniCart() {
     removeItem,
   } = useCart();
   const mounted = useMounted();
+  const [isRendered, setIsRendered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
-  useBodyScrollLock(miniCartOpen);
+  useBodyScrollLock(isRendered);
 
   useEffect(() => {
-    if (!miniCartOpen) return;
+    if (!miniCartOpen) {
+      setIsVisible(false);
+      const timer = window.setTimeout(() => {
+        setIsRendered(false);
+      }, MINI_CART_TRANSITION_MS);
+
+      return () => window.clearTimeout(timer);
+    }
+
+    setIsRendered(true);
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setIsVisible(true));
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [miniCartOpen]);
+
+  useEffect(() => {
+    if (!isRendered) return;
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -34,9 +55,9 @@ export function MiniCart() {
 
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [miniCartOpen, setMiniCartOpen]);
+  }, [isRendered, setMiniCartOpen]);
 
-  if (!mounted || !miniCartOpen) return null;
+  if (!mounted || !isRendered) return null;
 
   function closeMiniCart() {
     setMiniCartOpen(false);
@@ -45,13 +66,19 @@ export function MiniCart() {
   return createPortal(
     <>
       <div
-        className="fixed inset-0 z-[200] bg-yora-charcoal/50"
+        className={cn(
+          "mini-cart-backdrop fixed inset-0 z-[200] bg-yora-charcoal/50 backdrop-blur-[2px]",
+          isVisible ? "mini-cart-backdrop-open" : "mini-cart-backdrop-closed",
+        )}
         onClick={closeMiniCart}
         aria-hidden="true"
       />
 
       <aside
-        className="fixed top-0 right-0 z-[201] isolate flex h-dvh w-[min(420px,100vw)] flex-col overflow-hidden bg-yora-cream shadow-2xl"
+        className={cn(
+          "mini-cart-panel fixed top-0 right-0 z-[201] isolate flex h-dvh w-[min(420px,100vw)] flex-col overflow-hidden bg-yora-cream shadow-2xl",
+          isVisible ? "mini-cart-panel-open" : "mini-cart-panel-closed",
+        )}
         role="dialog"
         aria-modal="true"
         aria-label="Sacola"
