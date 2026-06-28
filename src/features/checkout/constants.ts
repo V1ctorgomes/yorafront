@@ -1,30 +1,3 @@
-import type { ShippingMethod, ShippingOption } from "@/types";
-
-export const SHIPPING_OPTIONS: ShippingOption[] = [
-  {
-    method: "pac",
-    label: "PAC",
-    price: 15.9,
-    estimatedDays: "8 a 12 dias úteis",
-  },
-  {
-    method: "sedex",
-    label: "SEDEX",
-    price: 29.9,
-    estimatedDays: "2 a 4 dias úteis",
-  },
-  {
-    method: "pickup",
-    label: "Retirada na Loja",
-    price: 0,
-    estimatedDays: "Disponível em 1 dia útil",
-  },
-];
-
-export function getShippingOption(method: ShippingMethod) {
-  return SHIPPING_OPTIONS.find((option) => option.method === method);
-}
-
 export const CHECKOUT_STEPS = [
   { id: 1, label: "Identificação" },
   { id: 2, label: "Endereço" },

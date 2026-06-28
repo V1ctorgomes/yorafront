@@ -21,6 +21,7 @@ import type {
   AdminOrdersResponse,
   AdminPaymentsQuery,
   AdminPaymentsResponse,
+  AdminShippingMethod,
   Payment,
 } from "@/types";
 
@@ -364,6 +365,30 @@ export function updateAdminOrderStatus(
   return adminFetch<AdminOrderDetail>(`/admin/orders/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
+  });
+}
+
+export function updateAdminOrderTracking(
+  id: string,
+  trackingCode: string | null,
+) {
+  return adminFetch<AdminOrderDetail>(`/admin/orders/${id}/tracking`, {
+    method: "PATCH",
+    body: JSON.stringify({ trackingCode }),
+  });
+}
+
+export function fetchAdminShippingMethods() {
+  return adminFetch<AdminShippingMethod[]>("/admin/shipping-methods");
+}
+
+export function updateAdminShippingMethod(
+  id: string,
+  data: Partial<Pick<AdminShippingMethod, "isActive" | "displayOrder">>,
+) {
+  return adminFetch<AdminShippingMethod>(`/admin/shipping-methods/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
 }
 

@@ -145,6 +145,33 @@ export default function AccountOrderDetailPage() {
 
           <section className="border border-yora-charcoal/10 bg-yora-cream p-5 text-sm">
             <h3 className="text-xs tracking-[0.35em] text-yora-muted uppercase">
+              Entrega
+            </h3>
+            <div className="mt-4 space-y-2">
+              <p>{order.shippingLabel}</p>
+              {order.shippingProvider && (
+                <p className="text-yora-muted">
+                  Transportadora: {order.shippingProvider}
+                </p>
+              )}
+              {order.shippingDeadlineDays && (
+                <p className="text-yora-muted">
+                  Prazo estimado: {order.shippingDeadlineDays} dia
+                  {order.shippingDeadlineDays > 1 ? "s" : ""} útei
+                  {order.shippingDeadlineDays > 1 ? "s" : "l"}
+                </p>
+              )}
+              {order.trackingCode && (
+                <p>
+                  Rastreio:{" "}
+                  <span className="font-medium">{order.trackingCode}</span>
+                </p>
+              )}
+            </div>
+          </section>
+
+          <section className="border border-yora-charcoal/10 bg-yora-cream p-5 text-sm">
+            <h3 className="text-xs tracking-[0.35em] text-yora-muted uppercase">
               Resumo
             </h3>
             <div className="mt-4 space-y-3">

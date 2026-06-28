@@ -7,13 +7,12 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   CHECKOUT_STEPS,
-  SHIPPING_OPTIONS,
-  getShippingOption,
   inputClassName,
   labelClassName,
 } from "@/features/checkout/constants";
 import { CheckoutAccessModal } from "@/features/checkout/CheckoutAccessModal";
 import { CheckoutAddressStep } from "@/features/checkout/CheckoutAddressStep";
+import { CheckoutShippingStep } from "@/features/checkout/CheckoutShippingStep";
 import {
   type AddressStepMode,
 } from "@/features/checkout/checkout-address-utils";
@@ -32,7 +31,7 @@ import type {
   CheckoutAddress,
   CheckoutCustomer,
   CheckoutPayload,
-  ShippingMethod,
+  ShippingQuote,
 } from "@/types";
 
 const initialCustomer: CheckoutCustomer = {
@@ -64,7 +63,10 @@ export function CheckoutFlow() {
   const [address, setAddress] = useState(initialAddress);
   const [addressStepValid, setAddressStepValid] = useState(false);
   const [addressMode, setAddressMode] = useState<AddressStepMode>("new");
-  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("pac");
+  const [selectedShipping, setSelectedShipping] = useState<ShippingQuote | null>(
+    null,
+  );
+  const [shippingLoading, setShippingLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,7 +111,6 @@ export function CheckoutFlow() {
 
   const minStep = skipIdentification ? 2 : 1;
 
-  const selectedShipping = getShippingOption(shippingMethod);
   const shippingPrice = selectedShipping?.price ?? 0;
   const orderTotal = cart.subtotal + shippingPrice;
 
@@ -127,11 +128,11 @@ export function CheckoutFlow() {
     }
 
     if (step === 3) {
-      return Boolean(shippingMethod);
+      return Boolean(selectedShipping) && !shippingLoading;
     }
 
     return true;
-  }, [step, customer, addressStepValid, shippingMethod]);
+  }, [step, customer, addressStepValid, selectedShipping, shippingLoading]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -187,7 +188,7 @@ export function CheckoutFlow() {
         state: address.state.trim(),
         country: address.country?.trim() || "BR",
       },
-      shippingMethod,
+      shippingMethodId: selectedShipping!.shippingMethodId,
     };
 
     setSubmitting(true);
@@ -351,41 +352,13 @@ export function CheckoutFlow() {
                   Escolha como deseja receber seu pedido.
                 </p>
               </div>
-              <div className="space-y-3">
-                {SHIPPING_OPTIONS.map((option) => (
-                  <label
-                    key={option.method}
-                    className={cn(
-                      "flex cursor-pointer items-start gap-4 border p-4 transition-colors",
-                      shippingMethod === option.method
-                        ? "border-yora-charcoal bg-yora-sand/40"
-                        : "border-yora-charcoal/10 hover:border-yora-charcoal/30",
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="shippingMethod"
-                      value={option.method}
-                      checked={shippingMethod === option.method}
-                      onChange={() => setShippingMethod(option.method)}
-                      className="mt-1"
-                    />
-                    <span className="flex-1">
-                      <span className="block text-sm font-medium text-yora-charcoal">
-                        {option.label}
-                      </span>
-                      <span className="mt-1 block text-sm text-yora-muted">
-                        {option.estimatedDays}
-                      </span>
-                    </span>
-                    <span className="text-sm font-medium">
-                      {option.price === 0
-                        ? "Grátis"
-                        : formatPrice(option.price)}
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <CheckoutShippingStep
+                zipCode={address.zipCode}
+                cartItems={cart.items}
+                selectedMethodId={selectedShipping?.shippingMethodId ?? null}
+                onSelect={setSelectedShipping}
+                onLoadingChange={setShippingLoading}
+              />
             </section>
           )}
 
@@ -428,11 +401,19 @@ export function CheckoutFlow() {
                   Entrega
                 </h3>
                 <p className="mt-3">
-                  {selectedShipping?.label} —{" "}
+                  {selectedShipping?.service} —{" "}
                   {shippingPrice === 0
                     ? "Grátis"
                     : formatPrice(shippingPrice)}
                 </p>
+                {selectedShipping && (
+                  <p className="mt-1 text-yora-muted">
+                    Prazo estimado:{" "}
+                    {selectedShipping.deadline <= 1
+                      ? "1 dia útil"
+                      : `${selectedShipping.deadline} dias úteis`}
+                  </p>
+                )}
               </div>
             </section>
           )}

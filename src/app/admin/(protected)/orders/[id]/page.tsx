@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { fetchAdminOrder, updateAdminOrderStatus } from "@/lib/api/admin";
+import { fetchAdminOrder, updateAdminOrderStatus, updateAdminOrderTracking } from "@/lib/api/admin";
 import {
   getOrderStatusColor,
   getOrderStatusLabel,
@@ -38,8 +38,10 @@ export default function AdminOrderDetailPage() {
   const params = useParams<{ id: string }>();
   const [order, setOrder] = useState<AdminOrderDetail | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<AdminOrderStatus | "">("");
+  const [trackingCode, setTrackingCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingTracking, setSavingTracking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function loadOrder() {
@@ -48,6 +50,7 @@ export default function AdminOrderDetailPage() {
     try {
       const data = await fetchAdminOrder(params.id);
       setOrder(data);
+      setTrackingCode(data.trackingCode ?? "");
       setSelectedStatus("");
     } catch (err) {
       setError(
@@ -78,6 +81,30 @@ export default function AdminOrderDetailPage() {
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleTrackingUpdate() {
+    if (!order) return;
+
+    setSavingTracking(true);
+    setError(null);
+
+    try {
+      const updated = await updateAdminOrderTracking(
+        order.id,
+        trackingCode.trim() || null,
+      );
+      setOrder(updated);
+      setTrackingCode(updated.trackingCode ?? "");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível atualizar o rastreio.",
+      );
+    } finally {
+      setSavingTracking(false);
     }
   }
 
@@ -141,6 +168,56 @@ export default function AdminOrderDetailPage() {
               <InfoItem label="E-mail" value={order.customer.email} />
               <InfoItem label="Telefone" value={order.customer.phone} />
               <InfoItem label="Entrega" value={order.shippingLabel} />
+            </div>
+          </section>
+
+          <section className="border border-yora-charcoal/10 bg-yora-cream p-5">
+            <h2 className="text-xs tracking-[0.35em] text-yora-muted uppercase">
+              Informações de entrega
+            </h2>
+            <div className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
+              <InfoItem
+                label="Transportadora"
+                value={order.shippingProvider ?? "—"}
+              />
+              <InfoItem label="Serviço" value={order.shippingService ?? "—"} />
+              <InfoItem
+                label="Valor do frete"
+                value={
+                  order.shippingPrice === 0
+                    ? "Grátis"
+                    : formatPrice(order.shippingPrice)
+                }
+              />
+              <InfoItem
+                label="Prazo estimado"
+                value={
+                  order.shippingDeadlineDays
+                    ? `${order.shippingDeadlineDays} dia${
+                        order.shippingDeadlineDays > 1 ? "s" : ""
+                      } útei${order.shippingDeadlineDays > 1 ? "s" : "l"}`
+                    : "—"
+                }
+              />
+            </div>
+            <div className="mt-5 space-y-3">
+              <label className="block text-xs tracking-widest text-yora-muted uppercase">
+                Código de rastreio
+              </label>
+              <input
+                className={`${inputClassName} w-full`}
+                value={trackingCode}
+                onChange={(event) => setTrackingCode(event.target.value)}
+                placeholder="Ex: BR123456789BR"
+              />
+              <Button
+                type="button"
+                size="sm"
+                disabled={savingTracking}
+                onClick={handleTrackingUpdate}
+              >
+                {savingTracking ? "Salvando..." : "Salvar rastreio"}
+              </Button>
             </div>
           </section>
 

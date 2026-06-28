@@ -208,6 +208,26 @@ export interface Cart {
 
 export type ShippingMethod = "pac" | "sedex" | "pickup";
 
+export interface ShippingQuote {
+  shippingMethodId: string;
+  provider: string;
+  service: string;
+  serviceCode: string;
+  price: number;
+  deadline: number;
+}
+
+export interface AdminShippingMethod {
+  id: string;
+  name: string;
+  provider: string;
+  serviceCode: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export type OrderStatusValue =
   | "PENDING"
   | "WAITING_PAYMENT"
@@ -238,7 +258,7 @@ export interface CheckoutAddress {
 export interface CheckoutPayload {
   customer: CheckoutCustomer;
   address: CheckoutAddress;
-  shippingMethod: ShippingMethod;
+  shippingMethodId: string;
 }
 
 export interface OrderAddress {
@@ -268,7 +288,12 @@ export interface Order {
   status: string;
   customer: CheckoutCustomer;
   shippingMethod: ShippingMethod;
+  shippingMethodId?: string | null;
+  shippingProvider?: string | null;
+  shippingService?: string | null;
   shippingLabel: string;
+  shippingDeadlineDays?: number | null;
+  trackingCode?: string | null;
   subtotal: number;
   shippingPrice: number;
   discount: number;
@@ -337,6 +362,10 @@ export interface AdminOrderDetail {
   customer: CheckoutCustomer;
   shippingMethod: ShippingMethod;
   shippingLabel: string;
+  shippingProvider?: string | null;
+  shippingService?: string | null;
+  shippingDeadlineDays?: number | null;
+  trackingCode?: string | null;
   subtotal: number;
   shippingPrice: number;
   discount: number;
@@ -370,10 +399,13 @@ export interface AdminOrdersQuery {
 }
 
 export interface ShippingOption {
-  method: ShippingMethod;
+  shippingMethodId: string;
+  provider: string;
+  service: string;
+  serviceCode: string;
   label: string;
   price: number;
-  estimatedDays: string;
+  deadline: number;
 }
 
 export interface AuthResponse {
@@ -467,6 +499,10 @@ export interface CustomerOrderDetail {
   status: OrderStatusValue;
   shippingMethod: ShippingMethod;
   shippingLabel: string;
+  shippingProvider?: string | null;
+  shippingService?: string | null;
+  shippingDeadlineDays?: number | null;
+  trackingCode?: string | null;
   subtotal: number;
   shippingPrice: number;
   discount: number;
