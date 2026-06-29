@@ -8,6 +8,7 @@ interface ProductColorSwatchesProps {
   selectedColor: string | null;
   onSelect: (color: string) => void;
   className?: string;
+  minColors?: number;
 }
 
 export function ProductColorSwatches({
@@ -15,8 +16,9 @@ export function ProductColorSwatches({
   selectedColor,
   onSelect,
   className,
+  minColors = 2,
 }: ProductColorSwatchesProps) {
-  if (colors.length < 2) {
+  if (colors.length < minColors) {
     return null;
   }
 

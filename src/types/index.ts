@@ -344,22 +344,6 @@ export interface AdminOrdersResponse {
   meta: AdminOrdersMeta;
 }
 
-export interface AdminOrdersDashboard {
-  counts: {
-    waitingPayment: number;
-    processing: number;
-    shipped: number;
-    delivered: number;
-    cancelled: number;
-  };
-  summary: {
-    totalOrders: number;
-    soldOrders: number;
-    totalRevenue: number;
-    averageTicket: number;
-  };
-}
-
 export interface AdminOrderStatusHistoryEntry {
   id: string;
   previousStatus: AdminOrderStatus | null;

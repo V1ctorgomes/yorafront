@@ -14,15 +14,9 @@ import {
   type OrdersViewMode,
 } from "@/components/admin/orders/OrdersViewToggle";
 import { useAdminOrdersSync } from "@/hooks/use-admin-orders-sync";
-import {
-  fetchAdminOrders,
-  fetchAdminOrdersDashboard,
-  updateAdminOrderStatus,
-} from "@/lib/api/admin";
-import { formatPrice } from "@/lib/utils";
+import { fetchAdminOrders, updateAdminOrderStatus } from "@/lib/api/admin";
 import type {
   AdminOrderListItem,
-  AdminOrdersDashboard,
   AdminOrdersQuery,
   OrderStatusValue,
 } from "@/types";
@@ -56,7 +50,6 @@ export default function AdminOrdersPage() {
   const [appliedFilters, setAppliedFilters] =
     useState<AdminOrdersQuery>(initialFilters);
   const [orders, setOrders] = useState<AdminOrderListItem[]>([]);
-  const [dashboard, setDashboard] = useState<AdminOrdersDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [isDraggingKanban, setIsDraggingKanban] = useState(false);
@@ -103,11 +96,7 @@ export default function AdminOrdersPage() {
       };
 
       try {
-        const [dashboardData, ordersData] = await Promise.all([
-          fetchAdminOrdersDashboard(),
-          fetchAdminOrders(listQuery),
-        ]);
-        setDashboard(dashboardData);
+        const ordersData = await fetchAdminOrders(listQuery);
         setOrders(ordersData.data);
         setMeta(ordersData.meta);
       } finally {
@@ -212,34 +201,6 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {dashboard && (
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <DashboardCard
-            label="Aguardando pagamento"
-            value={dashboard.counts.waitingPayment}
-          />
-          <DashboardCard
-            label="Em separação"
-            value={dashboard.counts.processing}
-          />
-          <DashboardCard label="Enviados" value={dashboard.counts.shipped} />
-          <DashboardCard label="Entregues" value={dashboard.counts.delivered} />
-          <DashboardCard label="Cancelados" value={dashboard.counts.cancelled} />
-          <DashboardCard
-            label="Total de pedidos"
-            value={dashboard.summary.totalOrders}
-          />
-          <DashboardCard
-            label="Valor vendido"
-            value={formatPrice(dashboard.summary.totalRevenue)}
-          />
-          <DashboardCard
-            label="Ticket médio"
-            value={formatPrice(dashboard.summary.averageTicket)}
-          />
-        </div>
-      )}
-
       <OrdersFiltersModal
         open={filtersModalOpen}
         viewMode={viewMode}
@@ -317,23 +278,6 @@ export default function AdminOrdersPage() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-function DashboardCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="border border-yora-charcoal/10 bg-yora-cream p-4">
-      <p className="text-xs tracking-widest text-yora-muted uppercase">
-        {label}
-      </p>
-      <p className="mt-2 font-display text-2xl text-yora-charcoal">{value}</p>
     </div>
   );
 }

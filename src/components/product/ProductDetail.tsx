@@ -23,6 +23,7 @@ import {
   buildWhatsAppUrl,
 } from "@/lib/whatsapp";
 import { ProductInfoTabs } from "@/components/product/ProductInfoTabs";
+import { ProductColorSwatches } from "@/components/product/ProductColorSwatches";
 import type { Product, ProductVariant } from "@/types";
 
 interface ProductDetailProps {
@@ -241,23 +242,12 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
                   <p className="mb-3 text-xs tracking-[0.35em] text-yora-muted uppercase">
                     Cor
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {colors.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => handleColorChange(color)}
-                        className={cn(
-                          "border px-4 py-2 text-sm transition-colors",
-                          selectedColor === color
-                            ? "border-yora-charcoal bg-yora-charcoal text-yora-cream"
-                            : "border-yora-charcoal/20 text-yora-charcoal hover:border-yora-charcoal",
-                        )}
-                      >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
+                  <ProductColorSwatches
+                    colors={colors}
+                    selectedColor={selectedColor}
+                    onSelect={handleColorChange}
+                    minColors={1}
+                  />
                 </div>
               )}
 

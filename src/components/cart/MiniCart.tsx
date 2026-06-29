@@ -139,21 +139,23 @@ export function MiniCart() {
           )}
         </div>
 
-        <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-transparent px-5 py-5">
-          <div className="mb-4 flex items-center justify-between text-sm">
-            <span className="text-yora-muted">Subtotal</span>
-            <span className="font-medium text-yora-charcoal">
-              {formatPrice(cart.subtotal)}
-            </span>
+        {cart.items.length > 0 && (
+          <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-transparent px-5 py-5">
+            <div className="mb-4 flex items-center justify-between text-sm">
+              <span className="text-yora-muted">Subtotal</span>
+              <span className="font-medium text-yora-charcoal">
+                {formatPrice(cart.subtotal)}
+              </span>
+            </div>
+            <Button
+              href="/carrinho"
+              className="w-full"
+              onClick={closeMiniCart}
+            >
+              Ver Carrinho
+            </Button>
           </div>
-          <Button
-            href="/carrinho"
-            className="w-full"
-            onClick={closeMiniCart}
-          >
-            Ver Carrinho
-          </Button>
-        </div>
+        )}
       </aside>
     </>,
     document.body,

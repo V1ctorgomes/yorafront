@@ -16,7 +16,6 @@ import type {
   ImageFormData,
   AdminOrderDetail,
   AdminOrderStatus,
-  AdminOrdersDashboard,
   AdminOrdersQuery,
   AdminOrdersResponse,
   AdminPaymentsQuery,
@@ -352,10 +351,6 @@ function buildOrdersQuery(params: AdminOrdersQuery = {}) {
 
   const query = searchParams.toString();
   return query ? `?${query}` : "";
-}
-
-export function fetchAdminOrdersDashboard() {
-  return adminFetch<AdminOrdersDashboard>("/admin/orders/dashboard");
 }
 
 export function fetchAdminOrders(params: AdminOrdersQuery = {}) {
