@@ -45,6 +45,8 @@ export interface Product {
   isFeatured: boolean;
   category: ProductCategoryRef;
   description?: string;
+  measurementsGuide?: string | null;
+  careInstructions?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
   images?: ProductImage[];

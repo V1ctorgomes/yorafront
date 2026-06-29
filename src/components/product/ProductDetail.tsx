@@ -17,6 +17,7 @@ import {
   buildProductWhatsAppMessage,
   buildWhatsAppUrl,
 } from "@/lib/whatsapp";
+import { ProductInfoTabs } from "@/components/product/ProductInfoTabs";
 import type { Product, ProductVariant } from "@/types";
 
 interface ProductDetailProps {
@@ -284,10 +285,11 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
           )}
 
           <div className="mt-8 space-y-3">
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <Button
+                size="sm"
                 disabled={!canAddToCart || adding || buying}
-                className="min-h-12 flex-1"
+                className="min-h-6 flex-1 py-1"
                 onClick={handleBuy}
               >
                 {isSoldOut
@@ -303,13 +305,13 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
                 disabled={!canAddToCart || adding || buying}
                 aria-label="Adicionar ao carrinho"
                 className={cn(
-                  "group inline-flex h-12 w-12 shrink-0 items-center justify-center border border-yora-charcoal bg-transparent text-yora-charcoal transition-colors hover:bg-yora-charcoal hover:text-yora-cream active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
+                  "group inline-flex h-6 w-6 shrink-0 items-center justify-center border border-yora-charcoal bg-transparent text-yora-charcoal transition-colors hover:bg-yora-charcoal hover:text-yora-cream active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
                 )}
               >
                 <span className="relative flex items-center justify-center">
-                  <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
-                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-yora-charcoal text-yora-cream transition-colors group-hover:bg-yora-cream group-hover:text-yora-charcoal">
-                    <Plus className="h-2.5 w-2.5" strokeWidth={3} />
+                  <ShoppingBag className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-yora-charcoal text-yora-cream transition-colors group-hover:bg-yora-cream group-hover:text-yora-charcoal">
+                    <Plus className="h-2 w-2" strokeWidth={3} />
                   </span>
                 </span>
               </button>
@@ -320,9 +322,9 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-h-12 w-full items-center justify-center gap-2 border border-[#25D366]/30 bg-[#25D366]/5 px-4 text-xs font-medium tracking-widest text-[#1a8f45] uppercase transition-colors hover:border-[#25D366]/50 hover:bg-[#25D366]/10"
+                className="flex h-6 w-full items-center justify-center gap-1.5 border border-[#25D366]/30 bg-[#25D366]/5 px-3 py-1 text-[10px] font-medium tracking-widest text-[#1a8f45] uppercase transition-colors hover:border-[#25D366]/50 hover:bg-[#25D366]/10"
               >
-                <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+                <MessageCircle className="h-3 w-3" strokeWidth={1.5} />
                 Comprar pelo WhatsApp
               </a>
             )}
@@ -330,16 +332,13 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
             {addError && <p className="text-sm text-red-600">{addError}</p>}
           </div>
 
-          {product.description && (
-            <div className="mt-10 border-t border-yora-charcoal/10 pt-8">
-              <h2 className="text-xs tracking-[0.35em] text-yora-muted uppercase">
-                Sobre o produto
-              </h2>
-              <p className="mt-4 text-sm leading-relaxed text-yora-charcoal/90 md:text-base">
-                {product.description}
-              </p>
-            </div>
-          )}
+          <ProductInfoTabs
+            description={product.description}
+            shortDescription={product.shortDescription}
+            categorySlug={product.category.slug}
+            measurementsGuide={product.measurementsGuide}
+            careInstructions={product.careInstructions}
+          />
         </div>
       </div>
 
