@@ -15,6 +15,7 @@ import {
   getCachedCart,
   setCachedCart,
 } from "@/features/cart/cart-storage";
+import { useToast } from "@/features/toast/toast-context";
 import {
   addCartItem,
   clearCartRequest,
@@ -30,7 +31,11 @@ interface CartContextValue {
   miniCartOpen: boolean;
   setMiniCartOpen: (open: boolean) => void;
   refreshCart: () => Promise<void>;
-  addItem: (productVariantId: string, quantity?: number) => Promise<void>;
+  addItem: (
+    productVariantId: string,
+    quantity?: number,
+    options?: { showToast?: boolean },
+  ) => Promise<void>;
   updateItemQuantity: (
     productVariantId: string,
     quantity: number,
@@ -45,6 +50,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart>(() => getCachedCart() ?? createEmptyCart());
   const [loading, setLoading] = useState(true);
   const [miniCartOpen, setMiniCartOpen] = useState(false);
+  const { showCartAddedToast } = useToast();
 
   const applyCart = useCallback((nextCart: Cart) => {
     setCart(nextCart);
@@ -63,12 +69,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [applyCart, refreshCart]);
 
   const addItem = useCallback(
-    async (productVariantId: string, quantity = 1) => {
+    async (
+      productVariantId: string,
+      quantity = 1,
+      options?: { showToast?: boolean },
+    ) => {
       const nextCart = await addCartItem(productVariantId, quantity);
       applyCart(nextCart);
-      setMiniCartOpen(true);
+
+      if (options?.showToast === false) {
+        return;
+      }
+
+      const addedItem = nextCart.items.find(
+        (item) => item.productVariantId === productVariantId,
+      );
+
+      if (addedItem) {
+        showCartAddedToast(addedItem, () => setMiniCartOpen(true));
+      }
     },
-    [applyCart],
+    [applyCart, showCartAddedToast],
   );
 
   const updateItemQuantity = useCallback(

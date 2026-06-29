@@ -1,14 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { MessageCircle, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
   buildProductGalleryImages,
   DraggableImageCarousel,
 } from "@/components/product/DraggableImageCarousel";
+import { CheckoutAccessModal } from "@/features/checkout/CheckoutAccessModal";
 import { useCart } from "@/features/cart/cart-context";
+import { isCustomerAuthenticated } from "@/lib/auth";
 import { cn, formatPrice } from "@/lib/utils";
+import {
+  buildProductWhatsAppMessage,
+  buildWhatsAppUrl,
+} from "@/lib/whatsapp";
 import type { Product, ProductVariant } from "@/types";
 
 interface ProductDetailProps {
@@ -27,9 +35,12 @@ function getInitialSelection(variants: ProductVariant[]) {
 }
 
 export function ProductDetail({ product, variants }: ProductDetailProps) {
+  const router = useRouter();
   const { addItem } = useCart();
   const [adding, setAdding] = useState(false);
+  const [buying, setBuying] = useState(false);
   const [addError, setAddError] = useState("");
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const initial = getInitialSelection(variants);
   const [selectedColor, setSelectedColor] = useState(initial.color);
   const [selectedSize, setSelectedSize] = useState(initial.size);
@@ -62,8 +73,35 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
   const canAddToCart =
     Boolean(selectedVariant && selectedColor && selectedSize) && !isSoldOut;
 
+  const whatsappUrl = useMemo(() => {
+    const message = buildProductWhatsAppMessage({
+      productName: product.name,
+      slug: product.slug,
+      color: selectedColor || undefined,
+      size: selectedSize || undefined,
+      price: displayPrice,
+    });
+
+    return buildWhatsAppUrl(message);
+  }, [
+    product.name,
+    product.slug,
+    selectedColor,
+    selectedSize,
+    displayPrice,
+  ]);
+
+  function goToCheckout() {
+    if (isCustomerAuthenticated()) {
+      router.push("/checkout");
+      return;
+    }
+
+    setCheckoutModalOpen(true);
+  }
+
   async function handleAddToCart() {
-    if (!selectedVariant || !canAddToCart) {
+    if (!selectedVariant || !canAddToCart || adding || buying) {
       return;
     }
 
@@ -80,6 +118,28 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
       );
     } finally {
       setAdding(false);
+    }
+  }
+
+  async function handleBuy() {
+    if (!selectedVariant || !canAddToCart || adding || buying) {
+      return;
+    }
+
+    setBuying(true);
+    setAddError("");
+
+    try {
+      await addItem(selectedVariant.id, 1, { showToast: false });
+      goToCheckout();
+    } catch (error) {
+      setAddError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível iniciar a compra.",
+      );
+    } finally {
+      setBuying(false);
     }
   }
 
@@ -223,21 +283,51 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
             </div>
           )}
 
-          <div className="mt-8">
-            <Button
-              disabled={!canAddToCart || adding}
-              className="min-w-[220px]"
-              onClick={handleAddToCart}
-            >
-              {isSoldOut
-                ? "Esgotado"
-                : adding
-                  ? "Adicionando..."
-                  : "Adicionar ao Carrinho"}
-            </Button>
-            {addError && (
-              <p className="mt-3 text-sm text-red-600">{addError}</p>
+          <div className="mt-8 space-y-3">
+            <div className="flex gap-3">
+              <Button
+                disabled={!canAddToCart || adding || buying}
+                className="min-h-12 flex-1"
+                onClick={handleBuy}
+              >
+                {isSoldOut
+                  ? "Esgotado"
+                  : buying
+                    ? "Processando..."
+                    : "Comprar"}
+              </Button>
+
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!canAddToCart || adding || buying}
+                aria-label="Adicionar ao carrinho"
+                className={cn(
+                  "group inline-flex h-12 w-12 shrink-0 items-center justify-center border border-yora-charcoal bg-transparent text-yora-charcoal transition-colors hover:bg-yora-charcoal hover:text-yora-cream active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
+                )}
+              >
+                <span className="relative flex items-center justify-center">
+                  <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-yora-charcoal text-yora-cream transition-colors group-hover:bg-yora-cream group-hover:text-yora-charcoal">
+                    <Plus className="h-2.5 w-2.5" strokeWidth={3} />
+                  </span>
+                </span>
+              </button>
+            </div>
+
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-h-12 w-full items-center justify-center gap-2 border border-[#25D366]/30 bg-[#25D366]/5 px-4 text-xs font-medium tracking-widest text-[#1a8f45] uppercase transition-colors hover:border-[#25D366]/50 hover:bg-[#25D366]/10"
+              >
+                <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+                Comprar pelo WhatsApp
+              </a>
             )}
+
+            {addError && <p className="text-sm text-red-600">{addError}</p>}
           </div>
 
           {product.description && (
@@ -252,6 +342,15 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
           )}
         </div>
       </div>
+
+      <CheckoutAccessModal
+        open={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+        onGuestContinue={() => {
+          setCheckoutModalOpen(false);
+          router.push("/checkout");
+        }}
+      />
     </div>
   );
 }

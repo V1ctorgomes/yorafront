@@ -2,6 +2,7 @@
 
 import { CartProvider } from "@/features/cart/cart-context";
 import { NavigationProvider } from "@/features/navigation/navigation-context";
+import { ToastProvider } from "@/features/toast/toast-context";
 import type { Category } from "@/types";
 
 interface StoreProvidersProps {
@@ -12,7 +13,9 @@ interface StoreProvidersProps {
 export function StoreProviders({ categories, children }: StoreProvidersProps) {
   return (
     <NavigationProvider categories={categories}>
-      <CartProvider>{children}</CartProvider>
+      <ToastProvider>
+        <CartProvider>{children}</CartProvider>
+      </ToastProvider>
     </NavigationProvider>
   );
 }
