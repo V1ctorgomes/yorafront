@@ -321,7 +321,7 @@ export function ProductDetail({ product, variants }: ProductDetailProps) {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-h-12 w-full max-w-[50%] items-center justify-center gap-2 border border-[#25D366]/30 bg-[#25D366]/5 px-4 text-xs font-medium tracking-widest text-[#1a8f45] uppercase transition-colors hover:border-[#25D366]/50 hover:bg-[#25D366]/10"
+                className="flex min-h-12 w-full items-center justify-center gap-2 border border-[#25D366]/30 bg-[#25D366]/5 px-4 text-xs font-medium tracking-widest text-[#1a8f45] uppercase transition-colors hover:border-[#25D366]/50 hover:bg-[#25D366]/10"
               >
                 <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
                 Comprar pelo WhatsApp

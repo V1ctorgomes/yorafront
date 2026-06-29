@@ -39,7 +39,7 @@ export function ProductInfoTabs({
   });
 
   return (
-    <div className="mt-10 border-t border-yora-charcoal/10 pt-8">
+    <div className="mt-10 pt-8">
       <div
         className="flex gap-1 overflow-x-auto border-b border-yora-charcoal/10 pb-px scrollbar-hide"
         role="tablist"
