@@ -21,6 +21,8 @@ const initialData: ProductFormData = {
   coverImage: "",
   isFeatured: false,
   isNew: false,
+  isOnSale: false,
+  compareAtPrice: "",
   isActive: true,
   seoTitle: "",
   seoDescription: "",
@@ -60,6 +62,11 @@ export default function NewProductPage() {
         coverImage: form.coverImage,
         isFeatured: form.isFeatured,
         isNew: form.isNew,
+        isOnSale: form.isOnSale,
+        compareAtPrice:
+          form.isOnSale && form.compareAtPrice
+            ? Number(form.compareAtPrice)
+            : null,
         isActive: form.isActive,
         seoTitle: form.seoTitle || undefined,
         seoDescription: form.seoDescription || undefined,

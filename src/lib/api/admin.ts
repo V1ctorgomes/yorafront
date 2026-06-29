@@ -183,6 +183,8 @@ export function createProduct(data: {
   coverImage: string;
   isFeatured?: boolean;
   isNew?: boolean;
+  isOnSale?: boolean;
+  compareAtPrice?: number | null;
   isActive?: boolean;
   seoTitle?: string;
   seoDescription?: string;

@@ -4,6 +4,7 @@ import type { Product, ProductVariant } from "@/types";
 interface FetchProductsParams {
   featured?: boolean;
   isNew?: boolean;
+  isOnSale?: boolean;
   category?: string;
 }
 
@@ -16,6 +17,10 @@ function buildProductsUrl(params?: FetchProductsParams) {
 
   if (params?.isNew) {
     searchParams.set("isNew", "true");
+  }
+
+  if (params?.isOnSale) {
+    searchParams.set("isOnSale", "true");
   }
 
   if (params?.category) {

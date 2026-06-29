@@ -174,6 +174,23 @@ export function ProductForm({
             className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
           />
         </div>
+
+        {form.isOnSale && (
+          <div>
+            <label className="mb-1 block text-xs tracking-widest text-yora-muted uppercase">
+              Preço original (R$)
+            </label>
+            <input
+              type="number"
+              min={0.01}
+              step={0.01}
+              value={form.compareAtPrice}
+              onChange={(e) => updateField("compareAtPrice", e.target.value)}
+              placeholder="Preço antes do desconto"
+              className="w-full border border-yora-charcoal/20 bg-yora-cream px-3 py-2.5 text-sm focus:border-yora-charcoal focus:outline-none"
+            />
+          </div>
+        )}
       </div>
 
       <div>
@@ -190,7 +207,7 @@ export function ProductForm({
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <label className="flex items-center gap-3 text-sm">
           <input
             type="checkbox"
@@ -208,6 +225,15 @@ export function ProductForm({
             className="h-4 w-4"
           />
           Novidade
+        </label>
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={form.isOnSale}
+            onChange={(e) => updateField("isOnSale", e.target.checked)}
+            className="h-4 w-4"
+          />
+          Em promoção (Sale)
         </label>
         <label className="flex items-center gap-3 text-sm">
           <input

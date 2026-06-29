@@ -52,6 +52,10 @@ export default function EditProductPage() {
           coverImage: product.coverImage,
           isFeatured: product.isFeatured,
           isNew: product.isNew,
+          isOnSale: product.isOnSale,
+          compareAtPrice: product.compareAtPrice
+            ? String(product.compareAtPrice)
+            : "",
           isActive: product.isActive,
           seoTitle: product.seoTitle ?? "",
           seoDescription: product.seoDescription ?? "",
@@ -79,6 +83,11 @@ export default function EditProductPage() {
         coverImage: form.coverImage,
         isFeatured: form.isFeatured,
         isNew: form.isNew,
+        isOnSale: form.isOnSale,
+        compareAtPrice:
+          form.isOnSale && form.compareAtPrice
+            ? Number(form.compareAtPrice)
+            : null,
         isActive: form.isActive,
         seoTitle: form.seoTitle,
         seoDescription: form.seoDescription,

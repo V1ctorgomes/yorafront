@@ -41,8 +41,10 @@ export interface Product {
   shortDescription: string;
   coverImage: string;
   basePrice: number;
+  compareAtPrice?: number | null;
   isNew: boolean;
   isFeatured: boolean;
+  isOnSale: boolean;
   category: ProductCategoryRef;
   description?: string;
   measurementsGuide?: string | null;
@@ -159,6 +161,8 @@ export interface ProductFormData {
   coverImage: string;
   isFeatured: boolean;
   isNew: boolean;
+  isOnSale: boolean;
+  compareAtPrice: string;
   isActive: boolean;
   seoTitle: string;
   seoDescription: string;

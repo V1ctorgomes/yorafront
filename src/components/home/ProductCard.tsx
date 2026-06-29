@@ -11,6 +11,10 @@ import {
 } from "@/components/product/DraggableImageCarousel";
 import { ProductColorSwatches } from "@/components/product/ProductColorSwatches";
 import { extractProductColors } from "@/lib/product-colors";
+import {
+  getSaleDiscountPercent,
+  hasSalePricing,
+} from "@/lib/product-pricing";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -47,7 +51,12 @@ export function ProductCard({ product }: ProductCardProps) {
           revealSecondOnHover={!selectedColor}
           onNavigate={() => router.push(`/produto/${product.slug}`)}
         />
-        {product.isNew && (
+        {product.isOnSale && (
+          <div className="pointer-events-none absolute top-3 left-3 z-10">
+            <Badge type="sale" />
+          </div>
+        )}
+        {!product.isOnSale && product.isNew && (
           <div className="pointer-events-none absolute top-3 left-3 z-10">
             <Badge type="new" />
           </div>
@@ -70,10 +79,25 @@ export function ProductCard({ product }: ProductCardProps) {
           </h3>
         </Link>
 
-        <div className="mt-2 flex items-baseline gap-2">
+        <div className="mt-2 flex flex-wrap items-baseline gap-2">
           <span className="text-sm font-medium text-yora-charcoal">
             {formatPrice(product.basePrice)}
           </span>
+          {hasSalePricing(product) && (
+            <>
+              <span className="text-sm text-yora-muted line-through">
+                {formatPrice(product.compareAtPrice!)}
+              </span>
+              <span className="text-[11px] font-medium tracking-wide text-yora-rose uppercase">
+                -
+                {getSaleDiscountPercent(
+                  product.compareAtPrice!,
+                  product.basePrice,
+                )}
+                %
+              </span>
+            </>
+          )}
         </div>
 
         <div className="mt-4 opacity-100 md:opacity-0 md:translate-y-2 transition-all duration-300 md:group-hover:opacity-100 md:group-hover:translate-y-0">
