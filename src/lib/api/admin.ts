@@ -197,8 +197,11 @@ export function createProduct(data: {
 
 export function updateProduct(
   id: string,
-  data: Partial<Omit<ProductFormData, "collectionId">> & {
+  data: Partial<
+    Omit<ProductFormData, "collectionId" | "compareAtPrice">
+  > & {
     collectionId?: string | null;
+    compareAtPrice?: number | null;
   },
 ) {
   return adminFetch<AdminProduct>(`/admin/products/${id}`, {
