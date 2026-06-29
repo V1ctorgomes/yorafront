@@ -21,8 +21,11 @@ import type {
   AdminOrdersResponse,
   AdminPaymentsQuery,
   AdminPaymentsResponse,
+  AdminPromotion,
   AdminShippingMethod,
   Payment,
+  PromotionFormData,
+  PromotionsDashboard,
 } from "@/types";
 
 class ApiError extends Error {
@@ -414,6 +417,66 @@ export function fetchAdminPayments(params: AdminPaymentsQuery = {}) {
 
 export function fetchAdminPayment(id: string) {
   return adminFetch<Payment & { rawResponse?: unknown }>(`/admin/payments/${id}`);
+}
+
+export function fetchAdminPromotionsDashboard() {
+  return adminFetch<PromotionsDashboard>("/admin/promotions/dashboard");
+}
+
+export function fetchAdminPromotions() {
+  return adminFetch<AdminPromotion[]>("/admin/promotions");
+}
+
+export function fetchAdminPromotion(id: string) {
+  return adminFetch<AdminPromotion>(`/admin/promotions/${id}`);
+}
+
+function buildPromotionPayload(data: PromotionFormData) {
+  return {
+    name: data.name.trim(),
+    description: data.description.trim() || undefined,
+    code: data.applicationType === "COUPON" ? data.code.trim() : undefined,
+    applicationType: data.applicationType,
+    type: data.type,
+    value: data.type === "FREE_SHIPPING" ? 0 : data.value,
+    minimumOrderValue: data.minimumOrderValue
+      ? Number(data.minimumOrderValue)
+      : undefined,
+    maximumDiscount: data.maximumDiscount
+      ? Number(data.maximumDiscount)
+      : undefined,
+    startDate: data.startDate,
+    endDate: data.endDate || undefined,
+    usageLimit: data.usageLimit ? Number(data.usageLimit) : undefined,
+    usageLimitPerCustomer: data.usageLimitPerCustomer
+      ? Number(data.usageLimitPerCustomer)
+      : undefined,
+    firstPurchaseOnly: data.firstPurchaseOnly,
+    isActive: data.isActive,
+    targets: data.storeWide
+      ? [{ targetType: "STORE" as const, targetId: null }]
+      : [{ targetType: "STORE" as const, targetId: null }],
+  };
+}
+
+export function createPromotion(data: PromotionFormData) {
+  return adminFetch<AdminPromotion>("/admin/promotions", {
+    method: "POST",
+    body: JSON.stringify(buildPromotionPayload(data)),
+  });
+}
+
+export function updatePromotion(id: string, data: PromotionFormData) {
+  return adminFetch<AdminPromotion>(`/admin/promotions/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(buildPromotionPayload(data)),
+  });
+}
+
+export function deletePromotion(id: string) {
+  return adminFetch<{ message: string }>(`/admin/promotions/${id}`, {
+    method: "DELETE",
+  });
 }
 
 export { ApiError };

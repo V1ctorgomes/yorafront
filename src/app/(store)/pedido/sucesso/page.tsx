@@ -114,7 +114,10 @@ function OrderSuccessContent() {
           </div>
           {order.discount > 0 && (
             <div className="flex justify-between">
-              <span className="text-yora-muted">Desconto</span>
+              <span className="text-yora-muted">
+                Desconto
+                {order.promotionCode ? ` (${order.promotionCode})` : ""}
+              </span>
               <span>-{formatPrice(order.discount)}</span>
             </div>
           )}

@@ -266,6 +266,7 @@ export interface CheckoutPayload {
   customer: CheckoutCustomer;
   address: CheckoutAddress;
   shippingMethodId: string;
+  promotionCode?: string;
 }
 
 export interface OrderAddress {
@@ -304,6 +305,7 @@ export interface Order {
   subtotal: number;
   shippingPrice: number;
   discount: number;
+  promotionCode?: string | null;
   total: number;
   paymentExpiresAt: string;
   createdAt: string;
@@ -377,6 +379,7 @@ export interface AdminOrderDetail {
   subtotal: number;
   shippingPrice: number;
   discount: number;
+  promotionCode?: string | null;
   total: number;
   itemCount: number;
   createdAt: string;
@@ -514,6 +517,7 @@ export interface CustomerOrderDetail {
   subtotal: number;
   shippingPrice: number;
   discount: number;
+  promotionCode?: string | null;
   total: number;
   createdAt: string;
   items: Array<{
@@ -630,4 +634,95 @@ export interface AdminPaymentsQuery {
 export interface AdminPaymentsResponse {
   data: Payment[];
   meta: PaginatedMeta;
+}
+
+export type PromotionType =
+  | "PERCENTAGE"
+  | "FIXED"
+  | "FREE_SHIPPING"
+  | "BUY_X_GET_Y";
+
+export type PromotionApplicationType = "COUPON" | "AUTOMATIC";
+
+export type PromotionTargetType =
+  | "PRODUCT"
+  | "CATEGORY"
+  | "COLLECTION"
+  | "STORE";
+
+export interface PromotionTarget {
+  id?: string;
+  targetType: PromotionTargetType;
+  targetId: string | null;
+}
+
+export interface PromotionValidationResult {
+  valid: boolean;
+  reason?: string;
+  promotion?: {
+    id: string;
+    name: string;
+    code: string | null;
+    type: PromotionType;
+    applicationType: PromotionApplicationType;
+  };
+  discountAmount: number;
+  freeShipping: boolean;
+  subtotal: number;
+  shippingPrice: number;
+  total: number;
+}
+
+export interface AdminPromotion {
+  id: string;
+  name: string;
+  description: string | null;
+  code: string | null;
+  applicationType: PromotionApplicationType;
+  type: PromotionType;
+  value: number | string;
+  minimumOrderValue: number | string | null;
+  maximumDiscount: number | string | null;
+  startDate: string;
+  endDate: string | null;
+  usageLimit: number | null;
+  usageCount: number;
+  usageLimitPerCustomer: number | null;
+  firstPurchaseOnly: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  targets: PromotionTarget[];
+  _count?: { usages: number };
+}
+
+export interface PromotionFormData {
+  name: string;
+  description: string;
+  code: string;
+  applicationType: PromotionApplicationType;
+  type: PromotionType;
+  value: number;
+  minimumOrderValue: string;
+  maximumDiscount: string;
+  startDate: string;
+  endDate: string;
+  usageLimit: string;
+  usageLimitPerCustomer: string;
+  firstPurchaseOnly: boolean;
+  isActive: boolean;
+  storeWide: boolean;
+}
+
+export interface PromotionsDashboard {
+  topPromotions: Array<{
+    promotionId: string;
+    name: string;
+    code: string | null;
+    usageCount: number;
+  }>;
+  totalDiscountGranted: number;
+  promotionRevenue: number;
+  ordersWithPromotion: number;
+  conversionRate: number;
 }

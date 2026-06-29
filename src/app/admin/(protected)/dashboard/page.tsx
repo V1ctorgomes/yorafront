@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { fetchAdminOrdersDashboard } from "@/lib/api/admin";
+import { fetchAdminOrdersDashboard, fetchAdminPromotionsDashboard } from "@/lib/api/admin";
 import { formatPrice } from "@/lib/utils";
-import type { AdminOrdersDashboard } from "@/types";
+import type { AdminOrdersDashboard, PromotionsDashboard } from "@/types";
 
 const shortcuts = [
   { label: "Pedidos", href: "/admin/orders" },
+  { label: "Promoções", href: "/admin/promotions" },
   { label: "Produtos", href: "/admin/products" },
   { label: "Categorias", href: "/admin/categories" },
   { label: "Coleções", href: "/admin/collections" },
@@ -16,11 +17,15 @@ const shortcuts = [
 
 export default function AdminDashboardPage() {
   const [dashboard, setDashboard] = useState<AdminOrdersDashboard | null>(null);
+  const [promotions, setPromotions] = useState<PromotionsDashboard | null>(null);
 
   useEffect(() => {
     fetchAdminOrdersDashboard()
       .then(setDashboard)
       .catch(() => setDashboard(null));
+    fetchAdminPromotionsDashboard()
+      .then(setPromotions)
+      .catch(() => setPromotions(null));
   }, []);
 
   return (
@@ -44,6 +49,53 @@ export default function AdminDashboardPage() {
             label="Ticket médio"
             value={formatPrice(dashboard.summary.averageTicket)}
           />
+        </div>
+      )}
+
+      {promotions && (
+        <div className="mb-8">
+          <h2 className="mb-4 text-xs tracking-[0.35em] text-yora-muted uppercase">
+            Promoções
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Descontos concedidos"
+              value={formatPrice(promotions.totalDiscountGranted)}
+            />
+            <MetricCard
+              label="Pedidos com promoção"
+              value={promotions.ordersWithPromotion}
+            />
+            <MetricCard
+              label="Receita com promoção"
+              value={formatPrice(promotions.promotionRevenue)}
+            />
+            <MetricCard
+              label="Conversão promocional"
+              value={`${(promotions.conversionRate * 100).toFixed(1)}%`}
+            />
+          </div>
+          {promotions.topPromotions.length > 0 && (
+            <div className="mt-4 border border-yora-charcoal/10 bg-yora-cream p-5">
+              <h3 className="text-sm font-medium text-yora-charcoal">
+                Promoções mais utilizadas
+              </h3>
+              <ul className="mt-3 space-y-2 text-sm text-yora-muted">
+                {promotions.topPromotions.map((item) => (
+                  <li
+                    key={item.promotionId}
+                    className="flex justify-between gap-4"
+                  >
+                    <span>
+                      {item.name}
+                      {item.code ? ` (${item.code})` : ""}
+                    </span>
+                    <span>{item.usageCount} usos</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 

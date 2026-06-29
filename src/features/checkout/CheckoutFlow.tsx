@@ -25,12 +25,14 @@ import {
 import { useCart } from "@/features/cart/cart-context";
 import { CheckoutApiError, submitCheckout } from "@/lib/api/checkout";
 import { createCustomerAddress, fetchCustomerProfile, MeApiError } from "@/lib/api/me";
+import { validatePromotion } from "@/lib/api/promotions";
 import { isCustomerAuthenticated } from "@/lib/auth";
 import { cn, formatPrice } from "@/lib/utils";
 import type {
   CheckoutAddress,
   CheckoutCustomer,
   CheckoutPayload,
+  PromotionValidationResult,
   ShippingQuote,
 } from "@/types";
 
@@ -69,6 +71,13 @@ export function CheckoutFlow() {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [promotionCode, setPromotionCode] = useState("");
+  const [appliedPromotionCode, setAppliedPromotionCode] = useState("");
+  const [promotionPreview, setPromotionPreview] =
+    useState<PromotionValidationResult | null>(null);
+  const [promotionLoading, setPromotionLoading] = useState(false);
+  const [promotionMessage, setPromotionMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isCustomerAuthenticated()) {
@@ -78,6 +87,7 @@ export function CheckoutFlow() {
 
       fetchCustomerProfile()
         .then((profile) => {
+          setCustomerId(profile.id);
           setCustomer({
             name: profile.name,
             email: profile.email,
@@ -112,7 +122,79 @@ export function CheckoutFlow() {
   const minStep = skipIdentification ? 2 : 1;
 
   const shippingPrice = selectedShipping?.price ?? 0;
-  const orderTotal = cart.subtotal + shippingPrice;
+  const discountAmount =
+    promotionPreview?.valid ? promotionPreview.discountAmount : 0;
+  const effectiveShippingPrice = promotionPreview?.valid
+    ? promotionPreview.shippingPrice
+    : shippingPrice;
+  const orderTotal = promotionPreview?.valid
+    ? promotionPreview.total
+    : cart.subtotal + shippingPrice;
+
+  useEffect(() => {
+    if (!selectedShipping || cart.items.length === 0) {
+      setPromotionPreview(null);
+      setPromotionMessage(null);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setPromotionLoading(true);
+      try {
+        const result = await validatePromotion({
+          code: appliedPromotionCode.trim() || undefined,
+          customerId: customerId ?? undefined,
+          cartItems: cart.items.map((item) => ({
+            productVariantId: item.productVariantId,
+            quantity: item.quantity,
+          })),
+          shippingPrice: selectedShipping.price,
+        });
+
+        if (cancelled) return;
+
+        setPromotionPreview(result);
+
+        if (appliedPromotionCode.trim()) {
+          setPromotionMessage(
+            result.valid
+              ? `Cupom ${appliedPromotionCode.trim().toUpperCase()} aplicado`
+              : (result.reason ?? "Cupom inválido"),
+          );
+        } else if (result.valid && result.promotion?.applicationType === "AUTOMATIC") {
+          setPromotionMessage(result.promotion.name);
+        } else {
+          setPromotionMessage(null);
+        }
+      } catch {
+        if (!cancelled) {
+          setPromotionPreview(null);
+          setPromotionMessage("Não foi possível validar o cupom");
+        }
+      } finally {
+        if (!cancelled) {
+          setPromotionLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [
+    selectedShipping,
+    cart.items,
+    appliedPromotionCode,
+    customerId,
+    cart.subtotal,
+  ]);
+
+  function handleApplyCoupon() {
+    setAppliedPromotionCode(promotionCode.trim().toUpperCase());
+    setPromotionMessage(null);
+  }
 
   const canAdvance = useMemo(() => {
     if (step === 1) {
@@ -189,7 +271,19 @@ export function CheckoutFlow() {
         country: address.country?.trim() || "BR",
       },
       shippingMethodId: selectedShipping!.shippingMethodId,
+      ...(appliedPromotionCode.trim()
+        ? { promotionCode: appliedPromotionCode.trim().toUpperCase() }
+        : {}),
     };
+
+    if (
+      appliedPromotionCode.trim() &&
+      promotionPreview &&
+      !promotionPreview.valid
+    ) {
+      setError(promotionPreview.reason ?? "Cupom inválido");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -402,9 +496,9 @@ export function CheckoutFlow() {
                 </h3>
                 <p className="mt-3">
                   {selectedShipping?.service} —{" "}
-                  {shippingPrice === 0
+                  {effectiveShippingPrice === 0
                     ? "Grátis"
-                    : formatPrice(shippingPrice)}
+                    : formatPrice(effectiveShippingPrice)}
                 </p>
                 {selectedShipping && (
                   <p className="mt-1 text-yora-muted">
@@ -485,6 +579,45 @@ export function CheckoutFlow() {
             ))}
           </div>
           <div className="mt-6 space-y-3 border-t border-yora-charcoal/10 pt-4 text-sm">
+            {step >= 3 && selectedShipping && (
+              <div className="space-y-2 pb-3">
+                <label className={labelClassName}>Cupom de desconto</label>
+                <div className="flex gap-2">
+                  <input
+                    className={inputClassName}
+                    value={promotionCode}
+                    onChange={(e) =>
+                      setPromotionCode(e.target.value.toUpperCase())
+                    }
+                    placeholder="Ex: WELCOME10"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleApplyCoupon}
+                    disabled={promotionLoading || !promotionCode.trim()}
+                  >
+                    Aplicar
+                  </Button>
+                </div>
+                {promotionLoading && (
+                  <p className="text-xs text-yora-muted">Validando cupom...</p>
+                )}
+                {promotionMessage && (
+                  <p
+                    className={cn(
+                      "text-xs",
+                      promotionPreview?.valid
+                        ? "text-green-700"
+                        : "text-red-600",
+                    )}
+                  >
+                    {promotionMessage}
+                  </p>
+                )}
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-yora-muted">Subtotal</span>
               <span>{formatPrice(cart.subtotal)}</span>
@@ -492,9 +625,24 @@ export function CheckoutFlow() {
             <div className="flex justify-between">
               <span className="text-yora-muted">Frete</span>
               <span>
-                {shippingPrice === 0 ? "Grátis" : formatPrice(shippingPrice)}
+                {effectiveShippingPrice === 0
+                  ? "Grátis"
+                  : formatPrice(effectiveShippingPrice)}
               </span>
             </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-green-700">
+                <span>
+                  Desconto
+                  {promotionPreview?.promotion?.code
+                    ? ` (${promotionPreview.promotion.code})`
+                    : promotionPreview?.promotion?.name
+                      ? ` (${promotionPreview.promotion.name})`
+                      : ""}
+                </span>
+                <span>-{formatPrice(discountAmount)}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t border-yora-charcoal/10 pt-3 text-base font-medium">
               <span>Total</span>
               <span>{formatPrice(orderTotal)}</span>

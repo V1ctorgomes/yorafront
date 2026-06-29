@@ -340,7 +340,13 @@ export default function AdminOrderDetailPage() {
               />
               <SummaryRow
                 label="Desconto"
-                value={formatPrice(order.discount)}
+                value={
+                  order.discount > 0
+                    ? `-${formatPrice(order.discount)}${
+                        order.promotionCode ? ` (${order.promotionCode})` : ""
+                      }`
+                    : formatPrice(0)
+                }
               />
               <SummaryRow
                 label="Total"

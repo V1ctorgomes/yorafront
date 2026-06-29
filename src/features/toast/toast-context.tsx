@@ -84,7 +84,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {toast?.type === "cart-added" && (
         <div
           className={cn(
-            "toast-viewport pointer-events-none fixed inset-x-0 bottom-0 z-[300] flex justify-center p-4 sm:inset-x-auto sm:right-4 sm:bottom-4 sm:justify-end sm:p-0",
+            "toast-viewport pointer-events-none fixed inset-x-0 top-0 z-[300] flex justify-center p-4 sm:inset-x-auto sm:right-4 sm:top-4 sm:justify-end sm:p-0",
           )}
           role="status"
           aria-live="polite"

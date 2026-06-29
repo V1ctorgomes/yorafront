@@ -13,6 +13,7 @@ import {
   Package,
   Shapes,
   ShoppingBag,
+  Tag,
   Truck,
   X,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Pedidos", href: "/admin/orders", icon: ShoppingBag },
+  { label: "Promoções", href: "/admin/promotions", icon: Tag },
   { label: "Transportadoras", href: "/admin/shipping", icon: Truck },
   { label: "Pagamentos", href: "/admin/payments", icon: CreditCard },
   { label: "Banners", href: "/admin/banners", icon: Image },

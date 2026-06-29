@@ -185,7 +185,12 @@ export default function AccountOrderDetailPage() {
                 }
               />
               {order.discount > 0 && (
-                <Row label="Desconto" value={`-${formatPrice(order.discount)}`} />
+                <>
+                  {order.promotionCode && (
+                    <Row label="Cupom" value={order.promotionCode} />
+                  )}
+                  <Row label="Desconto" value={`-${formatPrice(order.discount)}`} />
+                </>
               )}
               <Row label="Total" value={formatPrice(order.total)} strong />
             </div>

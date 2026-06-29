@@ -84,9 +84,6 @@ export function ProductInfoTabs({
             role="tabpanel"
             aria-labelledby="product-info-tab-measurements"
           >
-            <p className="mb-4 text-xs tracking-[0.2em] text-yora-muted uppercase">
-              {content.measurements.title}
-            </p>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[280px] border-collapse text-left text-sm">
                 <thead>
@@ -137,9 +134,6 @@ export function ProductInfoTabs({
             role="tabpanel"
             aria-labelledby="product-info-tab-care"
           >
-            <p className="mb-4 text-xs tracking-[0.2em] text-yora-muted uppercase">
-              {content.care.title}
-            </p>
             <ul className="space-y-2.5">
               {content.care.items.map((item) => (
                 <li
