@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
   buildProductGalleryImages,
   DraggableImageCarousel,
 } from "@/components/product/DraggableImageCarousel";
+import { ProductColorSwatches } from "@/components/product/ProductColorSwatches";
+import { extractProductColors } from "@/lib/product-colors";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -18,19 +20,31 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const router = useRouter();
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+
+  const availableColors = useMemo(
+    () => extractProductColors(product.images),
+    [product.images],
+  );
+
   const gallery = useMemo(
-    () => buildProductGalleryImages(product.coverImage, product.name, product.images, { limit: 3 }),
-    [product],
+    () =>
+      buildProductGalleryImages(product.coverImage, product.name, product.images, {
+        color: selectedColor ?? undefined,
+        limit: 3,
+      }),
+    [product, selectedColor],
   );
 
   return (
     <article className="group flex flex-col p-3 rounded-xl hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300">
       <div className="relative">
         <DraggableImageCarousel
+          key={selectedColor ?? "default"}
           images={gallery}
           alt={product.name}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          revealSecondOnHover
+          revealSecondOnHover={!selectedColor}
           onNavigate={() => router.push(`/produto/${product.slug}`)}
         />
         {product.isNew && (
@@ -39,6 +53,15 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
       </div>
+
+      {availableColors.length >= 2 && (
+        <ProductColorSwatches
+          colors={availableColors}
+          selectedColor={selectedColor}
+          onSelect={setSelectedColor}
+          className="mt-3"
+        />
+      )}
 
       <div className="mt-4 flex flex-1 flex-col">
         <Link href={`/produto/${product.slug}`}>
