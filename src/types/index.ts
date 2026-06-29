@@ -48,6 +48,7 @@ export interface Product {
   seoTitle?: string | null;
   seoDescription?: string | null;
   images?: ProductImage[];
+  colors?: string[];
 }
 
 export interface AdminProduct extends Product {

@@ -23,8 +23,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const availableColors = useMemo(
-    () => extractProductColors(product.images),
-    [product.images],
+    () => extractProductColors(product.images, product.colors),
+    [product.images, product.colors],
   );
 
   const gallery = useMemo(

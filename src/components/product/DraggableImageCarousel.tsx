@@ -347,9 +347,7 @@ export function buildProductGalleryImages(
   let filtered = allImages;
 
   if (options?.color && hasColorTaggedImages) {
-    filtered = allImages.filter(
-      (image) => !image.color || image.color === options.color,
-    );
+    filtered = allImages.filter((image) => image.color === options.color);
   }
 
   const mapped = filtered.map((image) => ({

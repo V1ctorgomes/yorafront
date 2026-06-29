@@ -51,7 +51,14 @@ export function isLightSwatch(color: string): boolean {
   );
 }
 
-export function extractProductColors(images?: ProductImage[]): string[] {
+export function extractProductColors(
+  images?: ProductImage[],
+  variantColors?: string[],
+): string[] {
+  if (variantColors?.length) {
+    return [...new Set(variantColors)];
+  }
+
   if (!images?.length) {
     return [];
   }
