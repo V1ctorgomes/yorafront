@@ -364,6 +364,9 @@ export interface AdminOrderDetail {
   shippingService?: string | null;
   shippingDeadlineDays?: number | null;
   trackingCode?: string | null;
+  shippingLabelId?: string | null;
+  shippingLabelUrl?: string | null;
+  logisticStatus?: string | null;
   subtotal: number;
   shippingPrice: number;
   discount: number;
@@ -382,6 +385,14 @@ export interface AdminOrderDetail {
   >;
   address: OrderAddress | null;
   statusHistory: AdminOrderStatusHistoryEntry[];
+  shippingEvents?: Array<{
+    id: string;
+    provider: string;
+    status: string;
+    description: string;
+    location?: string | null;
+    eventDate: string;
+  }>;
 }
 
 export interface AdminOrdersQuery {
@@ -502,6 +513,15 @@ export interface CustomerOrderDetail {
   shippingService?: string | null;
   shippingDeadlineDays?: number | null;
   trackingCode?: string | null;
+  logisticStatus?: string | null;
+  shippingLabelUrl?: string | null;
+  trackingUrl?: string | null;
+  shippingEvents?: Array<{
+    status: string;
+    description: string;
+    location?: string | null;
+    eventDate: string;
+  }>;
   subtotal: number;
   shippingPrice: number;
   discount: number;

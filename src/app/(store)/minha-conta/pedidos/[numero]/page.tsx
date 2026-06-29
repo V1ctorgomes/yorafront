@@ -164,11 +164,44 @@ export default function AccountOrderDetailPage() {
               {order.trackingCode && (
                 <p>
                   Rastreio:{" "}
-                  <span className="font-medium">{order.trackingCode}</span>
+                  {order.trackingUrl ? (
+                    <a
+                      href={order.trackingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium underline"
+                    >
+                      {order.trackingCode}
+                    </a>
+                  ) : (
+                    <span className="font-medium">{order.trackingCode}</span>
+                  )}
                 </p>
               )}
             </div>
           </section>
+
+          {order.shippingEvents && order.shippingEvents.length > 0 && (
+            <section className="border border-yora-charcoal/10 bg-yora-cream p-5 text-sm">
+              <h3 className="text-xs tracking-[0.35em] text-yora-muted uppercase">
+                Acompanhamento
+              </h3>
+              <ul className="mt-4 space-y-4">
+                {order.shippingEvents.map((event) => (
+                  <li
+                    key={`${event.eventDate}-${event.description}`}
+                    className="border-l-2 border-yora-taupe pl-4"
+                  >
+                    <p className="font-medium">{event.description}</p>
+                    <p className="text-xs text-yora-muted">
+                      {formatDateTime(event.eventDate)}
+                      {event.location ? ` — ${event.location}` : ""}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section className="border border-yora-charcoal/10 bg-yora-cream p-5 text-sm">
             <h3 className="text-xs tracking-[0.35em] text-yora-muted uppercase">

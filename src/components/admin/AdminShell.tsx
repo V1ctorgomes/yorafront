@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   Package,
+  PackageCheck,
   Shapes,
   ShoppingBag,
   Tag,
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Pedidos", href: "/admin/orders", icon: ShoppingBag },
+  { label: "Expedição", href: "/admin/expedition", icon: PackageCheck },
   { label: "Promoções", href: "/admin/promotions", icon: Tag },
   { label: "Transportadoras", href: "/admin/shipping", icon: Truck },
   { label: "Pagamentos", href: "/admin/payments", icon: CreditCard },

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   fetchAdminShippingMethods,
@@ -88,13 +89,21 @@ export default function AdminShippingPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-display text-3xl text-yora-charcoal">
-          Transportadoras
-        </h1>
-        <p className="mt-1 text-sm text-yora-muted">
-          Gerencie os métodos de entrega disponíveis no checkout.
-        </p>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl text-yora-charcoal">
+            Transportadoras
+          </h1>
+          <p className="mt-1 text-sm text-yora-muted">
+            Gerencie os métodos de entrega disponíveis no checkout.
+          </p>
+        </div>
+        <Link
+          href="/admin/shipping/melhor-envio"
+          className="border border-yora-charcoal/15 bg-yora-cream px-4 py-2 text-sm text-yora-charcoal hover:border-yora-charcoal/30"
+        >
+          Configurar Melhor Envio
+        </Link>
       </div>
 
       {error && (
