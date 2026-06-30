@@ -26,7 +26,7 @@ import { useCart } from "@/features/cart/cart-context";
 import { CheckoutApiError, submitCheckout } from "@/lib/api/checkout";
 import { createCustomerAddress, fetchCustomerProfile, MeApiError } from "@/lib/api/me";
 import { validatePromotion } from "@/lib/api/promotions";
-import { isCustomerAuthenticated } from "@/lib/auth";
+import { isCustomerAuthenticated, clearCustomerTokens } from "@/lib/auth";
 import { formatCpfInput, isValidCpf } from "@/lib/cpf";
 import { cn, formatPrice } from "@/lib/utils";
 import type {
@@ -64,7 +64,7 @@ export function CheckoutFlow() {
   const [skipIdentification, setSkipIdentification] = useState(false);
   const [accessModalOpen, setAccessModalOpen] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
-  const [checkoutReady, setCheckoutReady] = useState(false);
+  const [sessionResolved, setSessionResolved] = useState(false);
   const [customer, setCustomer] = useState(initialCustomer);
   const [address, setAddress] = useState(initialAddress);
   const [addressStepValid, setAddressStepValid] = useState(false);
@@ -85,13 +85,18 @@ export function CheckoutFlow() {
   const [promotionMessage, setPromotionMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isCustomerAuthenticated()) {
-      setSkipIdentification(true);
-      setStep(2);
-      setProfileLoading(true);
+    let cancelled = false;
 
-      fetchCustomerProfile()
-        .then((profile) => {
+    async function bootstrapCheckoutSession() {
+      if (isCustomerAuthenticated()) {
+        setSkipIdentification(true);
+        setStep(2);
+        setProfileLoading(true);
+
+        try {
+          const profile = await fetchCustomerProfile();
+          if (cancelled) return;
+
           setCustomerId(profile.id);
           setCpfPending(profile.cpfPending);
           setCustomer({
@@ -100,30 +105,44 @@ export function CheckoutFlow() {
             email: profile.email,
             phone: profile.phone,
           });
-        })
-        .catch(() => {
-          setCpfPending(true);
-          setError(
-            "Não foi possível carregar seu perfil. Informe o CPF para continuar.",
-          );
-        })
-        .finally(() => {
-          setProfileLoading(false);
-          setCheckoutReady(true);
-        });
+        } catch {
+          if (cancelled) return;
 
-      return;
+          clearCustomerTokens();
+          setSkipIdentification(false);
+          setStep(1);
+          setCpfPending(false);
+          setCustomer(initialCustomer);
+
+          if (!hasCheckoutGuestMode()) {
+            setAccessModalOpen(true);
+          }
+        } finally {
+          if (!cancelled) {
+            setProfileLoading(false);
+            setSessionResolved(true);
+          }
+        }
+
+        return;
+      }
+
+      if (hasCheckoutGuestMode()) {
+        setSkipIdentification(false);
+        setStep(1);
+        setSessionResolved(true);
+        return;
+      }
+
+      setAccessModalOpen(true);
+      setSessionResolved(true);
     }
 
-    if (hasCheckoutGuestMode()) {
-      setSkipIdentification(false);
-      setStep(1);
-      setCheckoutReady(true);
-      return;
-    }
+    void bootstrapCheckoutSession();
 
-    setCheckoutReady(true);
-    setAccessModalOpen(true);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const visibleSteps = skipIdentification
@@ -322,10 +341,34 @@ export function CheckoutFlow() {
     }
   }
 
-  if (loading || (isCustomerAuthenticated() && profileLoading) || !checkoutReady) {
+  if (!sessionResolved || (skipIdentification && profileLoading)) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-16 md:px-6">
         <p className="text-sm text-yora-muted">Carregando checkout...</p>
+      </div>
+    );
+  }
+
+  if (accessModalOpen) {
+    return (
+      <CheckoutAccessModal
+        open
+        allowClose
+        onClose={() => router.push("/carrinho")}
+        onGuestContinue={() => {
+          setCheckoutGuestMode();
+          setAccessModalOpen(false);
+          setSkipIdentification(false);
+          setStep(1);
+        }}
+      />
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-16 md:px-6">
+        <p className="text-sm text-yora-muted">Carregando carrinho...</p>
       </div>
     );
   }
@@ -345,23 +388,6 @@ export function CheckoutFlow() {
           </Button>
         </div>
       </div>
-    );
-  }
-
-  if (accessModalOpen) {
-    return (
-      <CheckoutAccessModal
-        open
-        allowClose
-        onClose={() => router.push("/carrinho")}
-        onGuestContinue={() => {
-          setCheckoutGuestMode();
-          setAccessModalOpen(false);
-          setSkipIdentification(false);
-          setStep(1);
-          setCheckoutReady(true);
-        }}
-      />
     );
   }
 

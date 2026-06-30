@@ -6,7 +6,10 @@ import { useEffect, useState } from "react";
 import { CartLineItem } from "@/components/cart/CartLineItem";
 import { Button } from "@/components/ui/Button";
 import { CheckoutAccessModal } from "@/features/checkout/CheckoutAccessModal";
-import { hasPendingPaymentOrders } from "@/features/checkout/checkout-session";
+import {
+  hasPendingPaymentOrders,
+  setCheckoutGuestMode,
+} from "@/features/checkout/checkout-session";
 import { useCart } from "@/features/cart/cart-context";
 import { isCustomerAuthenticated } from "@/lib/auth";
 import { formatPrice } from "@/lib/utils";
@@ -164,6 +167,11 @@ export default function CartPage() {
       <CheckoutAccessModal
         open={checkoutModalOpen}
         onClose={() => setCheckoutModalOpen(false)}
+        onGuestContinue={() => {
+          setCheckoutGuestMode();
+          setCheckoutModalOpen(false);
+          router.push("/checkout");
+        }}
       />
     </div>
   );
