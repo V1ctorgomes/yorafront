@@ -25,7 +25,7 @@ export async function calculateShipping(
   zipCode: string,
   items: Array<{ productVariantId: string; quantity: number }>,
 ): Promise<ShippingQuote[]> {
-  const response = await fetch(`${getApiUrl()}/shipping/calculate`, {
+  const response = await fetch(`${getApiUrl()}/shipping/quote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ zipCode, items }),
@@ -37,18 +37,6 @@ export async function calculateShipping(
   }
 
   return response.json() as Promise<ShippingQuote[]>;
-}
-
-export async function fetchShippingProviders() {
-  const response = await fetch(`${getApiUrl()}/shipping/providers`, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    await parseError(response);
-  }
-
-  return response.json();
 }
 
 export { ShippingApiError };

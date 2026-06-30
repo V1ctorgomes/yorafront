@@ -21,7 +21,7 @@ import type {
   AdminPaymentsQuery,
   AdminPaymentsResponse,
   AdminPromotion,
-  AdminShippingMethod,
+  AdminShippingProviders,
   Payment,
   PromotionFormData,
   PromotionsDashboard,
@@ -383,18 +383,48 @@ export function updateAdminOrderTracking(
   });
 }
 
-export function fetchAdminShippingMethods() {
-  return adminFetch<AdminShippingMethod[]>("/admin/shipping-methods");
+export function fetchAdminShippingProviders() {
+  return adminFetch<AdminShippingProviders>("/admin/shipping/providers");
 }
 
-export function updateAdminShippingMethod(
-  id: string,
-  data: Partial<Pick<AdminShippingMethod, "isActive" | "displayOrder">>,
-) {
-  return adminFetch<AdminShippingMethod>(`/admin/shipping-methods/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(data),
+export function syncAdminShippingCarriers() {
+  return adminFetch<AdminShippingProviders>("/admin/shipping/sync", {
+    method: "POST",
   });
+}
+
+export function updateAdminShippingCarrier(
+  id: string,
+  data: Partial<{
+    isActive: boolean;
+    displayOrder: number;
+    customMessage: string | null;
+  }>,
+) {
+  return adminFetch<AdminShippingProviders["carriers"][number]>(
+    `/admin/shipping/carriers/${id}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+export function updateAdminShippingService(
+  id: string,
+  data: Partial<{
+    isActive: boolean;
+    displayOrder: number;
+    customMessage: string | null;
+  }>,
+) {
+  return adminFetch<AdminShippingProviders["carriers"][number]["services"][number]>(
+    `/admin/shipping/services/${id}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    },
+  );
 }
 
 function buildPaymentsQuery(params: AdminPaymentsQuery) {

@@ -143,11 +143,13 @@ export function CheckoutShippingStep({
           />
           <span className="flex-1">
             <span className="block text-sm font-medium text-yora-charcoal">
-              {quote.service}
+              {quote.carrier} — {quote.service}
             </span>
-            <span className="mt-1 block text-xs text-yora-muted">
-              {quote.provider}
-            </span>
+            {quote.message && (
+              <span className="mt-1 block text-xs text-yora-charcoal/80">
+                {quote.message}
+              </span>
+            )}
             <span className="mt-1 block text-sm text-yora-muted">
               {formatDeadline(quote.deadline)}
             </span>

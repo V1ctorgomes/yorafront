@@ -166,8 +166,14 @@ export default function MelhorEnvioConfigPage() {
           </Link>
           <h1 className="font-display text-3xl text-yora-charcoal">Melhor Envio</h1>
           <p className="mt-1 text-sm text-yora-muted">
-            Configure credenciais, remetentes e embalagens padrão.
+            Configure credenciais, remetentes, embalagens e sincronização.
           </p>
+          {config?.lastSyncedAt && (
+            <p className="mt-2 text-xs text-yora-muted">
+              Última sincronização:{" "}
+              {new Date(config.lastSyncedAt).toLocaleString("pt-BR")}
+            </p>
+          )}
         </div>
         {config && (
           <span

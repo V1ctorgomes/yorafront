@@ -20,6 +20,7 @@ export interface MelhorEnvioConfig {
   environment: MelhorEnvioEnvironment;
   isConnected: boolean;
   tokenExpiresAt: string | null;
+  lastSyncedAt: string | null;
   updatedAt: string;
 }
 

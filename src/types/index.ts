@@ -221,22 +221,44 @@ export type ShippingMethod = "pac" | "sedex" | "pickup";
 
 export interface ShippingQuote {
   shippingMethodId: string;
+  shippingServiceId?: string;
   provider: string;
+  carrier: string;
   service: string;
   serviceCode: string;
   price: number;
   deadline: number;
+  message?: string | null;
 }
 
-export interface AdminShippingMethod {
+export interface ShippingCarrierConfig {
   id: string;
-  name: string;
   provider: string;
-  serviceCode: string;
+  externalId: string;
+  name: string;
+  logoUrl: string | null;
   isActive: boolean;
   displayOrder: number;
-  createdAt?: string;
-  updatedAt?: string;
+  customMessage: string | null;
+  services: ShippingServiceConfig[];
+}
+
+export interface ShippingServiceConfig {
+  id: string;
+  carrierId: string;
+  externalId: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  displayOrder: number;
+  customMessage: string | null;
+  carrier: Omit<ShippingCarrierConfig, "services">;
+}
+
+export interface AdminShippingProviders {
+  melhorEnvio: import("./logistics").MelhorEnvioConfig;
+  lastSyncedAt: string | null;
+  carriers: ShippingCarrierConfig[];
 }
 
 export type OrderStatusValue =
