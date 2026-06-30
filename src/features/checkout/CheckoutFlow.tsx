@@ -102,7 +102,10 @@ export function CheckoutFlow() {
           });
         })
         .catch(() => {
-          setError("Não foi possível carregar seus dados. Tente novamente.");
+          setCpfPending(true);
+          setError(
+            "Não foi possível carregar seu perfil. Informe o CPF para continuar.",
+          );
         })
         .finally(() => {
           setProfileLoading(false);
@@ -119,6 +122,7 @@ export function CheckoutFlow() {
       return;
     }
 
+    setCheckoutReady(true);
     setAccessModalOpen(true);
   }, []);
 
