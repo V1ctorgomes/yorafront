@@ -104,7 +104,8 @@ export default function MelhorEnvioConfigPage() {
 
   async function handleCreateSender(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
 
     try {
       const sender = await createShippingSender({
@@ -123,7 +124,7 @@ export default function MelhorEnvioConfigPage() {
         isActive: true,
       });
       setSenders((current) => [...current, sender]);
-      event.currentTarget.reset();
+      formElement.reset();
       setSuccess("Remetente cadastrado.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao cadastrar remetente.");
@@ -132,7 +133,8 @@ export default function MelhorEnvioConfigPage() {
 
   async function handleCreatePackage(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
 
     try {
       const pkg = await createShippingPackage({
@@ -145,7 +147,7 @@ export default function MelhorEnvioConfigPage() {
         isActive: true,
       });
       setPackages((current) => [...current, pkg]);
-      event.currentTarget.reset();
+      formElement.reset();
       setSuccess("Embalagem cadastrada.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao cadastrar embalagem.");
