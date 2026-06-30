@@ -27,6 +27,7 @@ import { CheckoutApiError, submitCheckout } from "@/lib/api/checkout";
 import { createCustomerAddress, fetchCustomerProfile, MeApiError } from "@/lib/api/me";
 import { validatePromotion } from "@/lib/api/promotions";
 import { isCustomerAuthenticated } from "@/lib/auth";
+import { formatCpfInput, isValidCpf } from "@/lib/cpf";
 import { cn, formatPrice } from "@/lib/utils";
 import type {
   CheckoutAddress,
@@ -38,11 +39,13 @@ import type {
 
 const initialCustomer: CheckoutCustomer = {
   name: "",
+  cpf: "",
   email: "",
   phone: "",
 };
 
 const initialAddress: CheckoutAddress = {
+  recipientName: "",
   zipCode: "",
   street: "",
   number: "",
@@ -51,6 +54,7 @@ const initialAddress: CheckoutAddress = {
   city: "",
   state: "",
   country: "BR",
+  reference: "",
 };
 
 export function CheckoutFlow() {
@@ -72,6 +76,7 @@ export function CheckoutFlow() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customerId, setCustomerId] = useState<string | null>(null);
+  const [cpfPending, setCpfPending] = useState(false);
   const [promotionCode, setPromotionCode] = useState("");
   const [appliedPromotionCode, setAppliedPromotionCode] = useState("");
   const [promotionPreview, setPromotionPreview] =
@@ -88,8 +93,10 @@ export function CheckoutFlow() {
       fetchCustomerProfile()
         .then((profile) => {
           setCustomerId(profile.id);
+          setCpfPending(profile.cpfPending);
           setCustomer({
             name: profile.name,
+            cpf: profile.cpf ?? "",
             email: profile.email,
             phone: profile.phone,
           });
@@ -200,13 +207,15 @@ export function CheckoutFlow() {
     if (step === 1) {
       return (
         customer.name.trim().length >= 2 &&
+        isValidCpf(customer.cpf) &&
         customer.email.includes("@") &&
         customer.phone.trim().length >= 8
       );
     }
 
     if (step === 2) {
-      return addressStepValid;
+      const cpfReady = !cpfPending || isValidCpf(customer.cpf);
+      return addressStepValid && cpfReady;
     }
 
     if (step === 3) {
@@ -214,7 +223,7 @@ export function CheckoutFlow() {
     }
 
     return true;
-  }, [step, customer, addressStepValid, selectedShipping, shippingLoading]);
+  }, [step, customer, cpfPending, addressStepValid, selectedShipping, shippingLoading]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -227,7 +236,7 @@ export function CheckoutFlow() {
           setSubmitting(true);
           try {
             await createCustomerAddress({
-              recipient: customer.name.trim(),
+              recipient: address.recipientName.trim(),
               zipCode: address.zipCode.trim(),
               street: address.street.trim(),
               number: address.number.trim(),
@@ -236,6 +245,7 @@ export function CheckoutFlow() {
               city: address.city.trim(),
               state: address.state.trim(),
               country: address.country?.trim() || "BR",
+              reference: address.reference?.trim() || undefined,
             });
           } catch (err) {
             const message =
@@ -257,10 +267,12 @@ export function CheckoutFlow() {
     const payload: CheckoutPayload = {
       customer: {
         name: customer.name.trim(),
+        cpf: customer.cpf.trim(),
         email: customer.email.trim(),
         phone: customer.phone.trim(),
       },
       address: {
+        recipientName: address.recipientName.trim(),
         zipCode: address.zipCode.trim(),
         street: address.street.trim(),
         number: address.number.trim(),
@@ -269,6 +281,7 @@ export function CheckoutFlow() {
         city: address.city.trim(),
         state: address.state.trim(),
         country: address.country?.trim() || "BR",
+        reference: address.reference?.trim() || undefined,
       },
       shippingMethodId: selectedShipping!.shippingMethodId,
       ...(appliedPromotionCode.trim()
@@ -399,6 +412,21 @@ export function CheckoutFlow() {
                 />
               </div>
               <div>
+                <label className={labelClassName}>CPF *</label>
+                <input
+                  className={inputClassName}
+                  placeholder="000.000.000-00"
+                  value={customer.cpf}
+                  onChange={(e) =>
+                    setCustomer({
+                      ...customer,
+                      cpf: formatCpfInput(e.target.value),
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div>
                 <label className={labelClassName}>E-mail *</label>
                 <input
                   type="email"
@@ -427,13 +455,43 @@ export function CheckoutFlow() {
           )}
 
           {step === 2 && (
-            <CheckoutAddressStep
-              loggedIn={skipIdentification}
-              address={address}
-              onAddressChange={setAddress}
-              onModeChange={setAddressMode}
-              onValidChange={setAddressStepValid}
-            />
+            <>
+              {skipIdentification && cpfPending && (
+                <section className="space-y-3 rounded border border-amber-200 bg-amber-50 p-4">
+                  <div>
+                    <h3 className="font-medium text-yora-charcoal">
+                      Informe seu CPF
+                    </h3>
+                    <p className="mt-1 text-sm text-yora-muted">
+                      Precisamos do CPF para emissão de etiquetas e documentos
+                      fiscais.
+                    </p>
+                  </div>
+                  <div>
+                    <label className={labelClassName}>CPF *</label>
+                    <input
+                      className={inputClassName}
+                      placeholder="000.000.000-00"
+                      value={customer.cpf}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          cpf: formatCpfInput(e.target.value),
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                </section>
+              )}
+              <CheckoutAddressStep
+                loggedIn={skipIdentification}
+                address={address}
+                onAddressChange={setAddress}
+                onModeChange={setAddressMode}
+                onValidChange={setAddressStepValid}
+              />
+            </>
           )}
 
           {step === 3 && (

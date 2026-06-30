@@ -10,29 +10,40 @@ import {
   authLabelClassName,
 } from "@/components/auth/AuthCard";
 import { registerCustomer } from "@/lib/api/auth";
+import { formatCpfInput } from "@/lib/cpf";
 
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/minha-conta";
   const [name, setName] = useState("");
+  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       await registerCustomer({
         name,
+        cpf,
         email,
-        phone: phone || undefined,
+        phone,
         password,
+        confirmPassword,
       });
       router.push(redirectTo);
     } catch (err) {
@@ -59,11 +70,21 @@ function RegisterContent() {
         submitLabel="Cadastrar"
       >
         <div>
-          <label className={authLabelClassName}>Nome</label>
+          <label className={authLabelClassName}>Nome completo</label>
           <input
             className={authInputClassName}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label className={authLabelClassName}>CPF</label>
+          <input
+            className={authInputClassName}
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChange={(e) => setCpf(formatCpfInput(e.target.value))}
             required
           />
         </div>
@@ -85,6 +106,7 @@ function RegisterContent() {
             placeholder="(11) 99999-9999"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            required
           />
         </div>
         <div>
@@ -94,6 +116,17 @@ function RegisterContent() {
             className={authInputClassName}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+          />
+        </div>
+        <div>
+          <label className={authLabelClassName}>Confirmar senha</label>
+          <input
+            type="password"
+            className={authInputClassName}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
             minLength={8}
           />

@@ -6,6 +6,7 @@ export function mapSavedAddressToCheckout(
   saved: CustomerAddress,
 ): CheckoutAddress {
   return {
+    recipientName: saved.recipient,
     zipCode: saved.zipCode,
     street: saved.street,
     number: saved.number,
@@ -14,11 +15,13 @@ export function mapSavedAddressToCheckout(
     city: saved.city,
     state: saved.state,
     country: saved.country,
+    reference: saved.reference ?? "",
   };
 }
 
 export function isCheckoutAddressComplete(address: CheckoutAddress) {
   return (
+    address.recipientName.trim().length >= 2 &&
     address.zipCode.replace(/\D/g, "").length === 8 &&
     address.street.trim().length >= 2 &&
     address.number.trim().length >= 1 &&

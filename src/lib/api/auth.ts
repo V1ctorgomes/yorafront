@@ -45,9 +45,11 @@ function customerHeaders(includeAuth = true) {
 
 export async function registerCustomer(payload: {
   name: string;
+  cpf: string;
   email: string;
-  phone?: string;
+  phone: string;
   password: string;
+  confirmPassword: string;
 }): Promise<AuthResponse> {
   const response = await fetch(`${getApiUrl()}/auth/register`, {
     method: "POST",

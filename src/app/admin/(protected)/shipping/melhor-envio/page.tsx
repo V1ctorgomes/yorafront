@@ -270,8 +270,8 @@ export default function MelhorEnvioConfigPage() {
             <h2 className="font-medium text-yora-charcoal">Novo remetente</h2>
             {[
               ["name", "Nome"],
-              ["company", "Empresa"],
-              ["document", "Documento"],
+              ["company", "CNPJ (opcional)"],
+              ["document", "CPF do responsável"],
               ["phone", "Telefone"],
               ["zipCode", "CEP"],
               ["address", "Endereço"],

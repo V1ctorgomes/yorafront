@@ -24,6 +24,7 @@ const emptyForm: CustomerAddressPayload = {
   city: "",
   state: "",
   country: "BR",
+  reference: "",
   isPrimary: false,
 };
 
@@ -61,6 +62,7 @@ export default function AccountAddressesPage() {
       city: address.city,
       state: address.state,
       country: address.country,
+      reference: address.reference ?? "",
       isPrimary: address.isPrimary,
     });
   }
@@ -195,6 +197,7 @@ export default function AccountAddressesPage() {
             <Field label="Cidade" value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
             <Field label="Estado" value={form.state} onChange={(v) => setForm({ ...form, state: v })} />
             <Field label="País" value={form.country ?? "BR"} onChange={(v) => setForm({ ...form, country: v })} />
+            <Field label="Referência" value={form.reference ?? ""} onChange={(v) => setForm({ ...form, reference: v })} optional />
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -225,10 +228,12 @@ function Field({
   label,
   value,
   onChange,
+  optional = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  optional?: boolean;
 }) {
   return (
     <div>
@@ -237,7 +242,7 @@ function Field({
         className={authInputClassName}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        required={label !== "Complemento"}
+        required={!optional && label !== "Complemento"}
       />
     </div>
   );

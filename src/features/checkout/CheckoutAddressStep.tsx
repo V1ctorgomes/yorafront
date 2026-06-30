@@ -100,6 +100,7 @@ export function CheckoutAddressStep({
     onModeChange("new");
     setSelectedAddressId(null);
     onAddressChange({
+      recipientName: "",
       zipCode: "",
       street: "",
       number: "",
@@ -108,6 +109,7 @@ export function CheckoutAddressStep({
       city: "",
       state: "",
       country: "BR",
+      reference: "",
     });
   }
 
@@ -234,6 +236,17 @@ function CheckoutAddressForm({
 }) {
   return (
     <>
+      <div>
+        <label className={labelClassName}>Nome do destinatário *</label>
+        <input
+          className={inputClassName}
+          value={address.recipientName}
+          onChange={(e) =>
+            onChange({ ...address, recipientName: e.target.value })
+          }
+          required
+        />
+      </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label className={labelClassName}>CEP *</label>
@@ -312,6 +325,15 @@ function CheckoutAddressForm({
             onChange={(e) => onChange({ ...address, country: e.target.value })}
           />
         </div>
+      </div>
+      <div>
+        <label className={labelClassName}>Referência</label>
+        <input
+          className={inputClassName}
+          placeholder="Próximo ao mercado, portão azul..."
+          value={address.reference ?? ""}
+          onChange={(e) => onChange({ ...address, reference: e.target.value })}
+        />
       </div>
     </>
   );

@@ -251,11 +251,13 @@ export type OrderStatusValue =
 
 export interface CheckoutCustomer {
   name: string;
+  cpf: string;
   email: string;
   phone: string;
 }
 
 export interface CheckoutAddress {
+  recipientName: string;
   zipCode: string;
   street: string;
   number: string;
@@ -264,6 +266,7 @@ export interface CheckoutAddress {
   city: string;
   state: string;
   country?: string;
+  reference?: string;
 }
 
 export interface CheckoutPayload {
@@ -283,6 +286,7 @@ export interface OrderAddress {
   city: string;
   state: string;
   country: string;
+  reference?: string | null;
 }
 
 export interface OrderItem {
@@ -454,6 +458,9 @@ export interface CustomerProfile {
   name: string;
   email: string;
   phone: string;
+  cpf: string | null;
+  cpfPending: boolean;
+  birthDate: string | null;
   isGuest: boolean;
   userId: string | null;
   createdAt: string;
@@ -464,6 +471,8 @@ export interface UpdateCustomerPayload {
   name?: string;
   email?: string;
   phone?: string;
+  cpf?: string;
+  birthDate?: string;
 }
 
 export interface CustomerAddress {
@@ -477,6 +486,7 @@ export interface CustomerAddress {
   city: string;
   state: string;
   country: string;
+  reference: string | null;
   isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
@@ -492,6 +502,7 @@ export interface CustomerAddressPayload {
   city: string;
   state: string;
   country?: string;
+  reference?: string;
   isPrimary?: boolean;
 }
 
