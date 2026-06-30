@@ -90,12 +90,13 @@ export function CheckoutAccessModal({
   if (!mounted || !open) return null;
 
   function handleGuestContinue() {
+    setCheckoutGuestMode();
+
     if (onGuestContinue) {
       onGuestContinue();
       return;
     }
 
-    setCheckoutGuestMode();
     router.push("/checkout");
   }
 

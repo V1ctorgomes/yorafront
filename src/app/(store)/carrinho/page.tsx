@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { CheckoutAccessModal } from "@/features/checkout/CheckoutAccessModal";
 import {
   hasPendingPaymentOrders,
-  setCheckoutGuestMode,
 } from "@/features/checkout/checkout-session";
 import { useCart } from "@/features/cart/cart-context";
 import { isCustomerAuthenticated } from "@/lib/auth";
@@ -168,7 +167,6 @@ export default function CartPage() {
         open={checkoutModalOpen}
         onClose={() => setCheckoutModalOpen(false)}
         onGuestContinue={() => {
-          setCheckoutGuestMode();
           setCheckoutModalOpen(false);
           router.push("/checkout");
         }}

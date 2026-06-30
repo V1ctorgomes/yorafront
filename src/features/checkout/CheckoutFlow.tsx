@@ -356,7 +356,6 @@ export function CheckoutFlow() {
         allowClose
         onClose={() => router.push("/carrinho")}
         onGuestContinue={() => {
-          setCheckoutGuestMode();
           setAccessModalOpen(false);
           setSkipIdentification(false);
           setStep(1);
