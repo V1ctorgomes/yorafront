@@ -434,6 +434,116 @@ export interface AdminOrdersQuery {
   limit?: number;
 }
 
+export type CrmCustomerSegment = "new" | "recurring" | "vip" | "inactive";
+
+export interface AdminCrmCustomersQuery {
+  search?: string;
+  segment?: CrmCustomerSegment;
+  hasOrders?: boolean;
+  hasAbandonedCart?: boolean;
+  state?: string;
+  city?: string;
+  registeredFrom?: string;
+  registeredTo?: string;
+  lastPurchaseFrom?: string;
+  lastPurchaseTo?: string;
+  sort?:
+    | "newest"
+    | "oldest"
+    | "highest_spent"
+    | "lowest_spent"
+    | "most_orders";
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminCrmCustomerListItem {
+  id: string;
+  name: string;
+  cpf: string | null;
+  email: string;
+  phone: string;
+  city: string | null;
+  state: string | null;
+  totalSpent: number;
+  orderCount: number;
+  lastPurchaseAt: string | null;
+  segment: CrmCustomerSegment;
+  status: string;
+  isGuest: boolean;
+  createdAt: string;
+}
+
+export interface AdminCrmCustomersResponse {
+  settings: {
+    vipThreshold: number;
+    inactiveDays: number;
+  };
+  data: AdminCrmCustomerListItem[];
+  meta: PaginatedMeta;
+}
+
+export interface AdminCrmCustomerDetail {
+  profile: {
+    id: string;
+    name: string;
+    cpf: string | null;
+    cpfPending: boolean;
+    email: string;
+    phone: string;
+    birthDate: string | null;
+    isGuest: boolean;
+    createdAt: string;
+    updatedAt: string;
+    lastLogin: string | null;
+  };
+  addresses: CustomerAddress[];
+  stats: {
+    totalSpent: number;
+    averageTicket: number;
+    totalOrders: number;
+    totalOrderCount: number;
+    firstPurchaseAt: string | null;
+    lastPurchaseAt: string | null;
+    productsPurchased: number;
+    topCategories: Array<{ categoryId: string; name: string; quantity: number }>;
+    topCollections: Array<{
+      collectionId: string;
+      name: string;
+      quantity: number;
+    }>;
+    favoriteProduct: { productId: string; name: string; quantity: number } | null;
+    favoriteCategory: { categoryId: string; name: string; quantity: number } | null;
+    lastShipmentAt: string | null;
+  };
+  segment: CrmCustomerSegment;
+  status: string;
+  orders: Array<{
+    id: string;
+    orderNumber: string;
+    createdAt: string;
+    total: number;
+    storeRevenue: number;
+    status: OrderStatusValue;
+    paymentStatus: string | null;
+    paymentMethod: string | null;
+    shippingProvider: string | null;
+    shippingService: string | null;
+    trackingCode: string | null;
+    logisticStatus: string | null;
+  }>;
+  timeline: Array<{
+    type: string;
+    title: string;
+    description: string;
+    date: string;
+  }>;
+  settings: {
+    vipThreshold: number;
+    inactiveDays: number;
+  };
+}
+
 export interface ShippingOption {
   shippingMethodId: string;
   provider: string;

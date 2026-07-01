@@ -5,7 +5,9 @@ import Link from "next/link";
 import { createPortal } from "react-dom";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { MiniCart } from "@/components/cart/MiniCart";
+import { fetchCustomerProfile } from "@/lib/api/auth";
 import { useCart } from "@/features/cart/cart-context";
+import { isCustomerAuthenticated } from "@/lib/auth";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 import { useMounted } from "@/lib/use-mounted";
 import { cn } from "@/lib/utils";
@@ -21,6 +23,8 @@ export function Header({ categories = [] }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileMenuRendered, setMobileMenuRendered] = useState(false);
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
+  const [customerLoggedIn, setCustomerLoggedIn] = useState(false);
+  const [customerName, setCustomerName] = useState<string | null>(null);
   const { cart, miniCartOpen, setMiniCartOpen } = useCart();
   const mounted = useMounted();
 
@@ -43,6 +47,45 @@ export function Header({ categories = [] }: HeaderProps) {
   }, [mobileOpen]);
 
   useBodyScrollLock(mobileMenuRendered);
+
+  useEffect(() => {
+    function syncAuthState() {
+      const loggedIn = isCustomerAuthenticated();
+      setCustomerLoggedIn(loggedIn);
+      if (!loggedIn) {
+        setCustomerName(null);
+      }
+    }
+
+    syncAuthState();
+    window.addEventListener("focus", syncAuthState);
+    return () => window.removeEventListener("focus", syncAuthState);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen || !customerLoggedIn) {
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchCustomerProfile()
+      .then((profile) => {
+        if (!cancelled) {
+          setCustomerName(profile.name);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCustomerLoggedIn(false);
+          setCustomerName(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mobileOpen, customerLoggedIn]);
 
   useEffect(() => {
     if (!mobileMenuRendered) return;
@@ -74,6 +117,11 @@ export function Header({ categories = [] }: HeaderProps) {
 
   function openMobileMenu() {
     setMiniCartOpen(false);
+    const loggedIn = isCustomerAuthenticated();
+    setCustomerLoggedIn(loggedIn);
+    if (!loggedIn) {
+      setCustomerName(null);
+    }
     setMobileOpen(true);
   }
 
@@ -142,14 +190,44 @@ export function Header({ categories = [] }: HeaderProps) {
           </nav>
 
           <div className="relative z-10 shrink-0 border-t border-yora-charcoal/10 bg-transparent px-5 py-6">
-            <Link
-              href="/minha-conta"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 text-sm tracking-wide text-yora-charcoal"
-            >
-              <User className="h-4 w-4" />
-              Minha conta
-            </Link>
+            {customerLoggedIn ? (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs tracking-widest text-yora-muted uppercase">
+                    Bem-vindo
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-yora-charcoal">
+                    {customerName ?? "..."}
+                  </p>
+                </div>
+                <Link
+                  href="/minha-conta"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-3 text-sm tracking-wide text-yora-charcoal"
+                >
+                  <User className="h-4 w-4" />
+                  Minha conta
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/cadastro"
+                  onClick={closeMobileMenu}
+                  className="text-sm tracking-widest uppercase text-yora-charcoal transition-colors hover:text-yora-taupe"
+                >
+                  Registrar
+                </Link>
+                <Link
+                  href="/login"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-3 text-sm tracking-wide text-yora-charcoal transition-colors hover:text-yora-taupe"
+                >
+                  <User className="h-4 w-4" />
+                  Entrar
+                </Link>
+              </div>
+            )}
           </div>
         </aside>
       </>,

@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   Tag,
   Truck,
+  Users,
   X,
 } from "lucide-react";
 import { clearAuthToken } from "@/lib/auth";
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Pedidos", href: "/admin/orders", icon: ShoppingBag },
+  { label: "CRM", href: "/admin/crm", icon: Users },
   { label: "Expedição", href: "/admin/expedition", icon: PackageCheck },
   { label: "Promoções", href: "/admin/promotions", icon: Tag },
   { label: "Transportadoras", href: "/admin/shipping", icon: Truck },

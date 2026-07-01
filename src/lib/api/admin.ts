@@ -4,6 +4,9 @@ import type {
   AdminBanner,
   AdminCategory,
   AdminCollection,
+  AdminCrmCustomerDetail,
+  AdminCrmCustomersQuery,
+  AdminCrmCustomersResponse,
   AdminProduct,
   AuthResponse,
   BannerFormData,
@@ -507,6 +510,78 @@ export function deletePromotion(id: string) {
   return adminFetch<{ message: string }>(`/admin/promotions/${id}`, {
     method: "DELETE",
   });
+}
+
+function buildCrmQuery(params: AdminCrmCustomersQuery) {
+  const searchParams = new URLSearchParams();
+
+  if (params.search) searchParams.set("search", params.search);
+  if (params.segment) searchParams.set("segment", params.segment);
+  if (params.hasOrders !== undefined) {
+    searchParams.set("hasOrders", String(params.hasOrders));
+  }
+  if (params.hasAbandonedCart) {
+    searchParams.set("hasAbandonedCart", "true");
+  }
+  if (params.state) searchParams.set("state", params.state);
+  if (params.city) searchParams.set("city", params.city);
+  if (params.registeredFrom) searchParams.set("registeredFrom", params.registeredFrom);
+  if (params.registeredTo) searchParams.set("registeredTo", params.registeredTo);
+  if (params.lastPurchaseFrom) {
+    searchParams.set("lastPurchaseFrom", params.lastPurchaseFrom);
+  }
+  if (params.lastPurchaseTo) searchParams.set("lastPurchaseTo", params.lastPurchaseTo);
+  if (params.sort) searchParams.set("sort", params.sort);
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
+
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
+export function fetchAdminCrmCustomers(query: AdminCrmCustomersQuery = {}) {
+  return adminFetch<AdminCrmCustomersResponse>(
+    `/admin/crm/customers${buildCrmQuery(query)}`,
+  );
+}
+
+export function fetchAdminCrmCustomer(id: string) {
+  return adminFetch<AdminCrmCustomerDetail>(`/admin/crm/customers/${id}`);
+}
+
+export async function exportAdminCrmCustomers(
+  query: AdminCrmCustomersQuery,
+  format: "csv" | "xlsx",
+) {
+  const token = getAuthToken();
+  const params = new URLSearchParams(buildCrmQuery(query).replace(/^\?/, ""));
+  params.set("format", format);
+
+  const response = await fetch(
+    `${getApiUrl()}/admin/crm/export?${params.toString()}`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    },
+  );
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    const message =
+      typeof body.message === "string"
+        ? body.message
+        : "Não foi possível exportar os clientes";
+    throw new ApiError(message, response.status);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = format === "xlsx" ? "clientes-crm.xlsx" : "clientes-crm.csv";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 export { ApiError };

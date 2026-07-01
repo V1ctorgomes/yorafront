@@ -100,7 +100,7 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        <div className="mt-4 opacity-100 md:opacity-0 md:translate-y-2 transition-all duration-300 md:group-hover:opacity-100 md:group-hover:translate-y-0">
+        <div className="mt-4 hidden md:block opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
           <Button variant="primary" size="sm" className="w-full" disabled>
             Adicionar à sacola
           </Button>
