@@ -133,20 +133,32 @@ export function AdminAnalyticsDashboard() {
         <div className="space-y-8">
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
-              label="Receita total"
+              label="Receita total (loja)"
               value={formatPrice(dashboard.kpis.totalRevenue)}
+              hint="Produtos vendidos, sem frete"
             />
             <MetricCard
-              label="Receita do período"
+              label="Receita do período (loja)"
               value={formatPrice(dashboard.kpis.periodRevenue)}
+              hint="Produtos − descontos, sem frete"
             />
             <MetricCard
-              label="Receita líquida"
-              value={formatPrice(dashboard.kpis.netRevenue)}
+              label="Receita bruta (produtos)"
+              value={formatPrice(dashboard.kpis.grossRevenue)}
+              hint="Antes de cupons no período"
             />
             <MetricCard
-              label="Ticket médio"
+              label="Total cobrado"
+              value={formatPrice(dashboard.kpis.collectedRevenue)}
+              hint="Inclui frete repassado à transportadora"
+            />
+            <MetricCard
+              label="Ticket médio (loja)"
               value={formatPrice(dashboard.kpis.averageTicket)}
+            />
+            <MetricCard
+              label="Ticket médio cobrado"
+              value={formatPrice(dashboard.kpis.averageCollectedTicket)}
             />
             <MetricCard
               label="Total de pedidos"
@@ -185,7 +197,7 @@ export function AdminAnalyticsDashboard() {
                   <Line
                     type="monotone"
                     dataKey="gross"
-                    name="Bruta"
+                    name="Bruta (produtos)"
                     stroke="#C8B6A2"
                     strokeWidth={2}
                     dot={false}
@@ -193,9 +205,18 @@ export function AdminAnalyticsDashboard() {
                   <Line
                     type="monotone"
                     dataKey="net"
-                    name="Líquida"
+                    name="Líquida (loja)"
                     stroke="#1A1A1A"
                     strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="collected"
+                    name="Total cobrado"
+                    stroke="#8C8C8C"
+                    strokeWidth={2}
+                    strokeDasharray="6 4"
                     dot={false}
                   />
                 </LineChart>
@@ -457,11 +478,20 @@ export function AdminAnalyticsDashboard() {
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string | number }) {
+function MetricCard({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+}) {
   return (
     <div className="border border-yora-charcoal/10 bg-yora-cream p-5">
       <p className="text-xs tracking-widest text-yora-muted uppercase">{label}</p>
       <p className="mt-2 font-display text-2xl text-yora-charcoal">{value}</p>
+      {hint && <p className="mt-1 text-xs text-yora-muted">{hint}</p>}
     </div>
   );
 }

@@ -18,9 +18,12 @@ export interface AnalyticsKpis {
   periodRevenue: number;
   grossRevenue: number;
   netRevenue: number;
+  collectedRevenue: number;
+  totalCollectedRevenue: number;
   totalOrders: number;
   periodOrders: number;
   averageTicket: number;
+  averageCollectedTicket: number;
   paidOrders: number;
   cancelledOrders: number;
   newCustomers: number;
@@ -34,6 +37,7 @@ export interface AnalyticsRevenuePoint {
   date: string;
   gross: number;
   net: number;
+  collected: number;
 }
 
 export interface AnalyticsOrdersPoint {
