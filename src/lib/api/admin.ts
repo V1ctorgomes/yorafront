@@ -551,7 +551,7 @@ export function fetchAdminCrmCustomer(id: string) {
 
 export async function exportAdminCrmCustomers(
   query: AdminCrmCustomersQuery,
-  format: "csv" | "xlsx",
+  format: "csv" | "xlsx" | "pdf",
 ) {
   const token = getAuthToken();
   const params = new URLSearchParams(buildCrmQuery(query).replace(/^\?/, ""));
@@ -577,7 +577,12 @@ export async function exportAdminCrmCustomers(
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = format === "xlsx" ? "clientes-crm.xlsx" : "clientes-crm.csv";
+  link.download =
+    format === "xlsx"
+      ? "clientes-crm.xlsx"
+      : format === "pdf"
+        ? `yora-clientes-crm-${new Date().toISOString().slice(0, 10)}.pdf`
+        : "clientes-crm.csv";
   document.body.appendChild(link);
   link.click();
   link.remove();

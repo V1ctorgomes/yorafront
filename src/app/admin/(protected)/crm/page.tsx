@@ -51,7 +51,7 @@ export default function AdminCrmPage() {
     useState<AdminCrmCustomersQuery>(initialFilters);
   const [customers, setCustomers] = useState<AdminCrmCustomerListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState<"csv" | "xlsx" | null>(null);
+  const [exporting, setExporting] = useState<"csv" | "xlsx" | "pdf" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [meta, setMeta] = useState({
     page: 1,
@@ -91,7 +91,7 @@ export default function AdminCrmPage() {
     setAppliedFilters(initialFilters);
   }
 
-  async function handleExport(format: "csv" | "xlsx") {
+  async function handleExport(format: "csv" | "xlsx" | "pdf") {
     setExporting(format);
     setError(null);
 
@@ -135,6 +135,15 @@ export default function AdminCrmPage() {
           >
             <Download className="mr-2 h-4 w-4" />
             {exporting === "xlsx" ? "Exportando..." : "XLSX"}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={exporting !== null}
+            onClick={() => handleExport("pdf")}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {exporting === "pdf" ? "Exportando..." : "PDF Premium"}
           </Button>
         </div>
       </div>
